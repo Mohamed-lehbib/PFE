@@ -74,3 +74,19 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [build, deploy]
+    if: always()
+    steps:
+      - name: Send Slack Notification
+        run: |
+          STATUS="${{ job.status }}"
+          if [ "${STATUS}" == "success" ]; then
+            MESSAGE="CI/CD Pipeline succeeded for run ${{ github.run_number }}."
+          else
+            MESSAGE="CI/CD Pipeline failed for run ${{ github.run_number }}."
+          fi
+          PAYLOAD="{'text': '${MESSAGE}'}"
+          curl -X POST -H 'Content-type: application/json' --data "${PAYLOAD}" ${{ secrets.SLACK_WEBHOOK_URL }}
