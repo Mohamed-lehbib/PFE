@@ -33,7 +33,7 @@ jobs:
       - name: Set Slack Color
         id: set-color
         run: |
-          if [[ "${{ env.PREVIOUS_STATUS }}" == "success" ]]; then
+          if [ "${{ env.PREVIOUS_STATUS }}" == "success" ]; then
             echo "SLACK_COLOR=good" >> $GITHUB_ENV
           else
             echo "SLACK_COLOR=danger" >> $GITHUB_ENV
