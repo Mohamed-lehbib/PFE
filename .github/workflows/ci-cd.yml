@@ -9,25 +9,40 @@ on:
       - main
 
 jobs:
-  notify-start:
+  get-previous-status:
     runs-on: ubuntu-latest
     steps:
+      - name: Get previous run status
+        id: previous-status
+        run: |
+          PREVIOUS_STATUS=$(gh run list --limit 1 --json status --jq '.[0].status')
+          echo "PREVIOUS_STATUS=${PREVIOUS_STATUS}" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify-start:
+    runs-on: ubuntu-latest
+    needs: get-previous-status
+    steps:
+      - name: Set Slack Color
+        id: set-color
+        run: |
+          if [[ "${PREVIOUS_STATUS}" == "success" ]]; then
+            echo "SLACK_COLOR=good" >> $GITHUB_ENV
+          else
+            echo "SLACK_COLOR=danger" >> $GITHUB_ENV
+          fi
+
       - name: Send Slack Notification (Pipeline Triggered)
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_COLOR: "#36a64f"
-          SLACK_USERNAME: "GitHub Actions"
-          SLACK_CHANNEL: "#your-channel" # Set your Slack channel here
+          SLACK_COLOR: ${{ env.SLACK_COLOR }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_TITLE: "CI/CD Pipeline Triggered"
           SLACK_MESSAGE: |
             *Status*: Pipeline Triggered
-            *Commit Message*: ${{ github.event.head_commit.message }}
-            *Triggered By*: ${{ github.actor }}
             *Repository*: ${{ github.repository }}
             *Run Number*: ${{ github.run_number }}
-            *Run ID*: ${{ github.run_id }}
-            *Workflow*: ${{ github.workflow }}
+            *Triggered By*: ${{ github.actor }}
 
   build:
     runs-on: ubuntu-latest
@@ -106,15 +121,10 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
-          SLACK_USERNAME: "GitHub Actions"
-          SLACK_CHANNEL: "#your-channel" # Set your Slack channel here
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_TITLE: "CI/CD Pipeline Notification"
           SLACK_MESSAGE: |
             *Status*: ${{ job.status }}
             *Commit Message*: ${{ github.event.head_commit.message }}
             *Triggered By*: ${{ github.actor }}
             *Repository*: ${{ github.repository }}
             *Run Number*: ${{ github.run_number }}
-            *Run ID*: ${{ github.run_id }}
-            *Workflow*: ${{ github.workflow }}
