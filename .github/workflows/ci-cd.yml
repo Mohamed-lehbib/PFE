@@ -18,7 +18,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "21"
+          node-version: "18.x"
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
@@ -80,13 +81,55 @@ jobs:
     needs: [build, deploy]
     if: always()
     steps:
-      - name: Send Slack Notification
-        run: |
-          STATUS="${{ job.status }}"
-          if [ "${STATUS}" == "success" ]; then
-            MESSAGE="CI/CD Pipeline succeeded for run ${{ github.run_number }}."
-          else
-            MESSAGE="CI/CD Pipeline failed for run ${{ github.run_number }}."
-          fi
-          PAYLOAD="{'text': '${MESSAGE}'}"
-          curl -X POST -H 'Content-type: application/json' --data "${PAYLOAD}" ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Send custom JSON data to Slack
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "CI/CD Pipeline Notification",
+              "attachments": [
+                {
+                  "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "value": "${{ job.status }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Commit Message",
+                      "value": "${{ github.event.head_commit.message }}",
+                      "short": false
+                    },
+                    {
+                      "title": "Triggered By",
+                      "value": "${{ github.actor }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Repository",
+                      "value": "${{ github.repository }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Run Number",
+                      "value": "${{ github.run_number }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Run ID",
+                      "value": "${{ github.run_id }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Workflow",
+                      "value": "${{ github.workflow }}",
+                      "short": true
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
