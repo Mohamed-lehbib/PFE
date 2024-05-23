@@ -17,8 +17,8 @@ jobs:
         env:
           SLACK_COLOR: "#36a64f"
           SLACK_USERNAME: "GitHub Actions"
-          SLACK_CHANNEL: "#your-channel"  # Set your Slack channel here
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: "#your-channel" # Set your Slack channel here
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_TITLE: "CI/CD Pipeline Triggered"
           SLACK_MESSAGE: |
             *Status*: Pipeline Triggered
@@ -40,7 +40,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18.x"
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm install
@@ -107,8 +107,8 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
           SLACK_USERNAME: "GitHub Actions"
-          SLACK_CHANNEL: "#your-channel"  # Set your Slack channel here
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: "#your-channel" # Set your Slack channel here
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_TITLE: "CI/CD Pipeline Notification"
           SLACK_MESSAGE: |
             *Status*: ${{ job.status }}
