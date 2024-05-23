@@ -20,9 +20,6 @@ jobs:
           SLACK_MESSAGE: |
             *Status*: Pipeline Triggered
           MSG_MINIMAL: true
-            # *Repository*: ${{ github.repository }}
-            # *Run Number*: ${{ github.run_number }}
-            # *Triggered By*: ${{ github.actor }}
 
   build:
     runs-on: ubuntu-latest
@@ -100,10 +97,10 @@ jobs:
       - name: Send Slack Notification (Pipeline Completed)
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_COLOR: ${{ needs.build.result == 'success' && 'good' || 'danger' }}
+          SLACK_COLOR: ${{ needs.deploy.result == 'success' && needs.build.result == 'success' && 'good' || 'danger' }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_MESSAGE: |
-            *Status*: ${{ needs.build.result == 'success' && 'SUCCESS' || 'FAILURE' }}
+            *Status*: ${{ needs.deploy.result == 'success' && needs.build.result == 'success' && 'SUCCESS' || 'FAILURE' }}
             *Commit Message*: ${{ github.event.head_commit.message }}
             *Triggered By*: ${{ github.actor }}
             *Repository*: ${{ github.repository }}
