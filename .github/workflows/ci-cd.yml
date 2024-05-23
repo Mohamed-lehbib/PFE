@@ -19,9 +19,10 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_MESSAGE: |
             *Status*: Pipeline Triggered
-            *Repository*: ${{ github.repository }}
-            *Run Number*: ${{ github.run_number }}
-            *Triggered By*: ${{ github.actor }}
+          MSG_MINIMAL: true
+            # *Repository*: ${{ github.repository }}
+            # *Run Number*: ${{ github.run_number }}
+            # *Triggered By*: ${{ github.actor }}
 
   build:
     runs-on: ubuntu-latest
