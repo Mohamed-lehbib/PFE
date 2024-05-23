@@ -13,57 +13,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Slack Notification (Pipeline Triggered)
-        id: slack-notify-start
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload: |
-            {
-              "text": "CI/CD Pipeline Triggered",
-              "attachments": [
-                {
-                  "color": "#36a64f",
-                  "fields": [
-                    {
-                      "title": "Status",
-                      "value": "Pipeline Triggered",
-                      "short": true
-                    },
-                    {
-                      "title": "Commit Message",
-                      "value": "${{ github.event.head_commit.message }}",
-                      "short": false
-                    },
-                    {
-                      "title": "Triggered By",
-                      "value": "${{ github.actor }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Repository",
-                      "value": "${{ github.repository }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Run Number",
-                      "value": "${{ github.run_number }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Run ID",
-                      "value": "${{ github.run_id }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Workflow",
-                      "value": "${{ github.workflow }}",
-                      "short": true
-                    }
-                  ]
-                }
-              ]
-            }
+        uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_COLOR: "#36a64f"
+          SLACK_USERNAME: "GitHub Actions"
+          SLACK_CHANNEL: "#your-channel"  # Set your Slack channel here
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_TITLE: "CI/CD Pipeline Triggered"
+          SLACK_MESSAGE: |
+            *Status*: Pipeline Triggered
+            *Commit Message*: ${{ github.event.head_commit.message }}
+            *Triggered By*: ${{ github.actor }}
+            *Repository*: ${{ github.repository }}
+            *Run Number*: ${{ github.run_number }}
+            *Run ID*: ${{ github.run_id }}
+            *Workflow*: ${{ github.workflow }}
 
   build:
     runs-on: ubuntu-latest
@@ -138,55 +102,19 @@ jobs:
     needs: [build, deploy]
     if: always()
     steps:
-      - name: Send custom JSON data to Slack
-        id: slack-notify-end
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload: |
-            {
-              "text": "CI/CD Pipeline Notification",
-              "attachments": [
-                {
-                  "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
-                  "fields": [
-                    {
-                      "title": "Status",
-                      "value": "${{ job.status }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Commit Message",
-                      "value": "${{ github.event.head_commit.message }}",
-                      "short": false
-                    },
-                    {
-                      "title": "Triggered By",
-                      "value": "${{ github.actor }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Repository",
-                      "value": "${{ github.repository }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Run Number",
-                      "value": "${{ github.run_number }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Run ID",
-                      "value": "${{ github.run_id }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Workflow",
-                      "value": "${{ github.workflow }}",
-                      "short": true
-                    }
-                  ]
-                }
-              ]
-            }
+      - name: Send Slack Notification (Pipeline Completed)
+        uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
+          SLACK_USERNAME: "GitHub Actions"
+          SLACK_CHANNEL: "#your-channel"  # Set your Slack channel here
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_TITLE: "CI/CD Pipeline Notification"
+          SLACK_MESSAGE: |
+            *Status*: ${{ job.status }}
+            *Commit Message*: ${{ github.event.head_commit.message }}
+            *Triggered By*: ${{ github.actor }}
+            *Repository*: ${{ github.repository }}
+            *Run Number*: ${{ github.run_number }}
+            *Run ID*: ${{ github.run_id }}
+            *Workflow*: ${{ github.workflow }}
