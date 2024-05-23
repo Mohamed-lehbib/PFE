@@ -12,10 +12,16 @@ jobs:
   get-previous-status:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install GitHub CLI
+        run: sudo apt-get install gh -y
+
       - name: Get previous run status
         id: previous-status
         run: |
-          PREVIOUS_STATUS=$(gh run list --limit 1 --json status --jq '.[0].status')
+          PREVIOUS_STATUS=$(gh run list --limit 1 --json conclusion --jq '.[0].conclusion')
           echo "PREVIOUS_STATUS=${PREVIOUS_STATUS}" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -27,7 +33,7 @@ jobs:
       - name: Set Slack Color
         id: set-color
         run: |
-          if [[ "${PREVIOUS_STATUS}" == "success" ]]; then
+          if [[ "${{ env.PREVIOUS_STATUS }}" == "success" ]]; then
             echo "SLACK_COLOR=good" >> $GITHUB_ENV
           else
             echo "SLACK_COLOR=danger" >> $GITHUB_ENV
