@@ -15,7 +15,7 @@ interface FormData {
 
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(true);
-  const [isActive, setActive] = useState(true);
+  const [isActive, setIsActive] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -31,6 +31,7 @@ export default function Auth() {
   } = useForm<FormData>();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
+    setIsActive(true);
     try {
       const response = await fetch(
         `/api/auth?mode=${isSignUp ? "signup" : "signin"}`,
@@ -56,10 +57,11 @@ export default function Auth() {
     } catch (error) {
       console.error("Error:", error);
     }
+    setIsActive(false);
   };
 
   return (
-    <LoadingOverlay active={isActive} spinner text="Loading your content...">
+    <LoadingOverlay active={isActive} spinner>
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="flex w-full h-screen">
           <motion.div
