@@ -63,7 +63,6 @@ const Auth = () => {
 
   return (
     <LoadingOverlay active={isActive} spinner>
-      <Suspense fallback={<div>Loading...</div>}>
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
           <div className="flex w-full h-screen">
             <motion.div
@@ -203,7 +202,6 @@ const Auth = () => {
             </motion.div>
           </div>
         </div>
-      </Suspense>
     </LoadingOverlay>
   );
 };
