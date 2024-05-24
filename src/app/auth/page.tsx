@@ -1,10 +1,10 @@
 "use client";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { Spin } from "antd";
 import { motion } from "framer-motion";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import TypingText from "@/components/typing-text";
+import LoadingOverlay from "react-loading-overlay-ts";
 
 interface FormData {
   name?: string;
@@ -13,9 +13,10 @@ interface FormData {
   confirmPassword?: string;
 }
 
-const Auth = () => {
-  const router = useRouter();
+export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(true);
+  const [isActive, setActive] = useState(true);
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -58,13 +59,7 @@ const Auth = () => {
   };
 
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center h-scree w-screen">
-          <Spin tip="Loading" size="large" />
-        </div>
-      }
-    >
+    <LoadingOverlay active={isActive} spinner text="Loading your content...">
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="flex w-full h-screen">
           <motion.div
@@ -197,8 +192,6 @@ const Auth = () => {
           </motion.div>
         </div>
       </div>
-    </Suspense>
+    </LoadingOverlay>
   );
-};
-
-export default Auth;
+}
