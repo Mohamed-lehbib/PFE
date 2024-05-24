@@ -13,9 +13,9 @@ interface FormData {
   confirmPassword?: string;
 }
 
-export default function Auth() {
+const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(true);
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -33,20 +33,18 @@ export default function Auth() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsActive(true);
     try {
-      const response = await fetch(
-        `/api/auth?mode=${isSignUp ? "signup" : "signin"}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
+      const response = await fetch(`/api/auth?mode=${isSignUp ? "signup" : "signin"}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Error:", errorData.error);
+        setIsActive(false);
         return;
       }
 
@@ -196,4 +194,6 @@ export default function Auth() {
       </div>
     </LoadingOverlay>
   );
-}
+};
+
+export default Auth;
