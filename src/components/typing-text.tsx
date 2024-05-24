@@ -5,7 +5,10 @@ interface TypingTextProps {
   className: string;
 }
 
-export default function TypingText({ children, className }: TypingTextProps) {
+export default function TypingText({
+  children,
+  className,
+}: Readonly<TypingTextProps>) {
   const [displayedText, setDisplayedText] = useState("");
   const [index, setIndex] = useState(0);
 
