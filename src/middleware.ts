@@ -12,13 +12,13 @@ export async function middleware(request: NextRequest) {
 
     // Redirect unauthenticated users on private routes to the sign-in page
     if (
-      !["/auth"].some((path) => pathname.includes(path)) &&
+      !["/signin"].some((path) => pathname.includes(path)) &&
       !isAuthenticated
     ) {
-      return NextResponse.redirect(new URL('/auth', request.url));
+      return NextResponse.redirect(new URL('/signin', request.url));
     }
     if (
-      ["/auth"].some((path) => pathname.includes(path)) &&
+      ["/signin"].some((path) => pathname.includes(path)) &&
       isAuthenticated
     ) {
       return NextResponse.redirect(new URL(`/`, request.url));

@@ -33,13 +33,16 @@ const Auth = () => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsActive(true);
     try {
-      const response = await fetch(`/api/auth?mode=${isSignUp ? "signup" : "signin"}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `/api/auth?mode=${isSignUp ? "signup" : "signin"}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -167,7 +170,7 @@ const Auth = () => {
               {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
               <button
                 onClick={() =>
-                  router.push(`/auth?mode=${isSignUp ? "signin" : "signup"}`)
+                  router.push(`/signin?mode=${isSignUp ? "signin" : "signup"}`)
                 }
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
