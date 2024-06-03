@@ -1,24 +1,31 @@
+import { NextRequest, NextResponse } from 'next/server';
 import { createClientForServer } from "@/utils/supabase/server";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+    console.log('API route hit');
     try {
-        const { email, password, name, confirmPassword } = await req.json(); // Parse values from the JSON body
-        const url = new URL(req.url);
-        const mode = url.searchParams.get('mode'); // Retrieve the mode from the search params
+        const { email, password, name, confirmPassword } = await req.json();
+        console.log('Request Body:', { email, password, name, confirmPassword });
+
+        const mode = req.nextUrl.searchParams.get('mode');
+        console.log('Mode:', mode);
 
         if (!email || !password) {
-            return new Response('Missing email or password', { status: 400 });
+            console.log('Missing email or password');
+            return NextResponse.json({ error: 'Missing email or password' }, { status: 400 });
         }
 
         const supabase = createClientForServer();
 
         if (mode === 'signup') {
             if (!name || !confirmPassword) {
-                return new Response('Missing name or confirmPassword', { status: 400 });
+                console.log('Missing name or confirmPassword');
+                return NextResponse.json({ error: 'Missing name or confirmPassword' }, { status: 400 });
             }
 
             if (password !== confirmPassword) {
-                return new Response('Passwords do not match', { status: 400 });
+                console.log('Passwords do not match');
+                return NextResponse.json({ error: 'Passwords do not match' }, { status: 400 });
             }
 
             const { data, error } = await supabase.auth.signUp({
@@ -26,26 +33,17 @@ export async function POST(req: Request) {
                 password,
                 options: {
                     data: {
-                        name: name,
+                        name,
                     }
                 }
             });
 
             if (error) {
-                return new Response(JSON.stringify({ error: error.message }), {
-                    status: error.status,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+                console.log('Supabase signup error:', error);
+                return NextResponse.json({ error: error.message }, { status: error.status || 500 });
             }
 
-            return new Response(JSON.stringify({ message: 'User signed up successfully', user: data }), {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+            return NextResponse.json({ message: 'User signed up successfully', user: data }, { status: 200 });
         } else if (mode === 'signin') {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
@@ -53,30 +51,18 @@ export async function POST(req: Request) {
             });
 
             if (error) {
-                return new Response(JSON.stringify({ error: error.message }), {
-                    status: error.status,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+                console.log('Supabase signin error:', error);
+                return NextResponse.json({ error: error.message }, { status: error.status || 500 });
             }
 
-            return new Response(JSON.stringify({ message: 'User signed in successfully', user: data }), {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+            return NextResponse.json({ message: 'User signed in successfully', user: data }, { status: 200 });
         } else {
-            return new Response('Invalid mode', { status: 400 });
+            console.log('Invalid mode');
+            return NextResponse.json({ error: 'Invalid mode' }, { status: 400 });
         }
 
     } catch (e: any) {
-        return new Response(JSON.stringify({ error: 'Internal server error', details: e.toString() }), {
-            status: 500,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        console.log('Internal server error:', e);
+        return NextResponse.json({ error: 'Internal server error', details: e.toString() }, { status: 500 });
     }
 }
