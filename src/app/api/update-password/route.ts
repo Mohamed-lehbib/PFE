@@ -6,14 +6,13 @@ export async function POST(req: NextRequest) {
     try {
         const { email, newPassword } = await req.json();
         console.log('Request Body:', { email, newPassword });
-
-        if (!email ?? !newPassword) {
+        
+        if (!email || !newPassword) {
             console.log('Missing email or newPassword');
             return NextResponse.json({ error: 'Missing email or newPassword' }, { status: 400 });
         }
 
         const supabase = createClientForServer();
-        
         const { data, error } = await supabase.auth.updateUser({
             password: newPassword
         });
