@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect unauthenticated users on private routes to the sign-in page
   if (
-    !["/signin"].some((path) => pathname.includes(path)) &&
+    !["/signin", "/update-password"].some((path) => pathname.includes(path)) &&
     !isAuthenticated
   ) {
     return NextResponse.redirect(new URL('/signin', request.url));
@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
   
   // Redirect authenticated users trying to access sign-in page
   if (
-    ["/signin"].some((path) => pathname.includes(path)) &&
+    ["/signin", "/update-password"].some((path) => pathname.includes(path)) &&
     isAuthenticated
   ) {
     return NextResponse.redirect(new URL(`/`, request.url));

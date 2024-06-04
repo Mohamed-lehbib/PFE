@@ -10,17 +10,12 @@ export async function POST(req: NextRequest) {
         const mode = req.nextUrl.searchParams.get('mode');
         console.log('Mode:', mode);
 
-        if (!email || !password) {
-            console.log('Missing email or password');
-            return NextResponse.json({ error: 'Missing email or password' }, { status: 400 });
-        }
-
         const supabase = createClientForServer();
 
         if (mode === 'signup') {
-            if (!name || !confirmPassword) {
-                console.log('Missing name or confirmPassword');
-                return NextResponse.json({ error: 'Missing name or confirmPassword' }, { status: 400 });
+            if (!email || !password || !name || !confirmPassword) {
+                console.log('Missing fields for signup');
+                return NextResponse.json({ error: 'Missing fields for signup' }, { status: 400 });
             }
 
             if (password !== confirmPassword) {
@@ -45,6 +40,11 @@ export async function POST(req: NextRequest) {
 
             return NextResponse.json({ message: 'User signed up successfully', user: data }, { status: 200 });
         } else if (mode === 'signin') {
+            if (!email || !password) {
+                console.log('Missing email or password for signin');
+                return NextResponse.json({ error: 'Missing email or password' }, { status: 400 });
+            }
+
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password
@@ -56,6 +56,22 @@ export async function POST(req: NextRequest) {
             }
 
             return NextResponse.json({ message: 'User signed in successfully', user: data }, { status: 200 });
+        } else if (mode === 'reset-password') {
+            if (!email) {
+                console.log('Missing email for reset-password');
+                return NextResponse.json({ error: 'Missing email' }, { status: 400 });
+            }
+
+            const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `http://localhost:3000/update-password?email=${email}`,
+            });
+
+            if (error) {
+                console.log('Supabase reset password error:', error);
+                return NextResponse.json({ error: error.message }, { status: error.status || 500 });
+            }
+
+            return NextResponse.json({ message: 'Password reset email sent successfully', user: data }, { status: 200 });
         } else {
             console.log('Invalid mode');
             return NextResponse.json({ error: 'Invalid mode' }, { status: 400 });
