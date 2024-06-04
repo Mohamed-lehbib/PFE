@@ -21,7 +21,7 @@ const Auth = () => {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    setMode(searchParams.get("mode") || "signin");
+    setMode(searchParams.get("mode") ?? "signin");
   }, [searchParams]);
 
   const {
@@ -87,15 +87,6 @@ const Auth = () => {
   };
 
   const handleForgotPassword = () => {
-    // const email = watch("email");
-    // if (!email) {
-    //   messageApi.warning({
-    //     content: "Please enter your email address first.",
-    //     duration: 5,
-    //     className: "custom-class",
-    //   });
-    //   return;
-    // }
     router.push(`/signin?mode=reset-password`);
     console.log("clicked");
   };
@@ -193,7 +184,7 @@ const Auth = () => {
                     {...register("confirmPassword", {
                       required: "Confirm Password is required",
                       validate: (value) =>
-                        value === watch("password") || "Passwords do not match",
+                        value === watch("password") ?? "Passwords do not match",
                     })}
                     className="w-full px-3 py-2 mt-1 border rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />

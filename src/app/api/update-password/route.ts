@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
         const { email, newPassword } = await req.json();
         console.log('Request Body:', { email, newPassword });
 
-        if (!email || !newPassword) {
+        if (!email ?? !newPassword) {
             console.log('Missing email or newPassword');
             return NextResponse.json({ error: 'Missing email or newPassword' }, { status: 400 });
         }
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
         if (error) {
             console.log('Supabase update password error:', error);
-            return NextResponse.json({ error: error.message }, { status: error.status || 500 });
+            return NextResponse.json({ error: error.message }, { status: error.status ?? 500 });
         }
 
         return NextResponse.json({ message: 'Password updated successfully', user: data }, { status: 200 });

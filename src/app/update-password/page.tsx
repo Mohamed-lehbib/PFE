@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -102,7 +102,7 @@ const UpdatePassword = () => {
                 <input
                   id="email"
                   type="email"
-                  value={email || ""}
+                  value={email ?? ""}
                   readOnly
                   {...register("email")}
                   className="w-full px-3 py-2 mt-1 border rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -145,7 +145,7 @@ const UpdatePassword = () => {
                   {...register("confirmPassword", {
                     required: "Confirm New Password is required",
                     validate: (value) =>
-                      value === watch("password") || "Passwords do not match",
+                      value === watch("password") ?? "Passwords do not match",
                   })}
                   className="w-full px-3 py-2 mt-1 border rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />

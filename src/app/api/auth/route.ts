@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
         const supabase = createClientForServer();
 
         if (mode === 'signup') {
-            if (!email || !password || !name || !confirmPassword) {
+            if (!email ?? !password ?? !name ?? !confirmPassword) {
                 console.log('Missing fields for signup');
                 return NextResponse.json({ error: 'Missing fields for signup' }, { status: 400 });
             }
@@ -35,12 +35,12 @@ export async function POST(req: NextRequest) {
 
             if (error) {
                 console.log('Supabase signup error:', error);
-                return NextResponse.json({ error: error.message }, { status: error.status || 500 });
+                return NextResponse.json({ error: error.message }, { status: error.status ?? 500 });
             }
 
             return NextResponse.json({ message: 'User signed up successfully', user: data }, { status: 200 });
         } else if (mode === 'signin') {
-            if (!email || !password) {
+            if (!email ?? !password) {
                 console.log('Missing email or password for signin');
                 return NextResponse.json({ error: 'Missing email or password' }, { status: 400 });
             }
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
             if (error) {
                 console.log('Supabase signin error:', error);
-                return NextResponse.json({ error: error.message }, { status: error.status || 500 });
+                return NextResponse.json({ error: error.message }, { status: error.status ?? 500 });
             }
 
             return NextResponse.json({ message: 'User signed in successfully', user: data }, { status: 200 });
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
             if (error) {
                 console.log('Supabase reset password error:', error);
-                return NextResponse.json({ error: error.message }, { status: error.status || 500 });
+                return NextResponse.json({ error: error.message }, { status: error.status ?? 500 });
             }
 
             return NextResponse.json({ message: 'Password reset email sent successfully', user: data }, { status: 200 });
