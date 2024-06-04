@@ -76,7 +76,10 @@ const App: React.FC = () => {
         trigger={null}
         collapsible
         collapsed={collapsed}
-        style={{ height: "100vh", backgroundColor: "#2563EB" }} // blue-600
+        style={{
+          height: "100vh",
+          // backgroundColor: "#2563EB"
+        }} // blue-600
       >
         <div className="demo-logo-vertical" />
         <Menu
@@ -87,7 +90,7 @@ const App: React.FC = () => {
           style={{
             height: "calc(100% - 64px)",
             borderRight: 0,
-            backgroundColor: "#2563EB",
+            // backgroundColor: "#2563EB",
           }} // adjust menu height and background color
         />
         <div
