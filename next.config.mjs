@@ -3,6 +3,7 @@ const nextConfig = {
   images: {
     domains: [
       "placehold.co",
+      "jgozufsmifucopknqjll.supabase.co"
     ],
   },
     experimental: {

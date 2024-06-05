@@ -46,13 +46,17 @@ const ProjectUploader: React.FC<{ onSuccess: () => void }> = ({
 
       if (response.ok) {
         onSuccess();
+        setFile(null);
+        setFilePreview(null);
+        setName("");
+        setDescription("");
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to create project");
       }
     } catch (error: any) {
       console.error("Error creating project:", error);
-      message.error(error.message || "Failed to create project");
+      message.error(error || "Failed to create project");
     }
   };
 
@@ -114,7 +118,6 @@ const ProjectUploader: React.FC<{ onSuccess: () => void }> = ({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Enter project description"
             className="w-full px-3 py-2 border rounded"
-            required
           />
         </div>
         <button
