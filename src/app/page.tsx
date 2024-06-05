@@ -4,17 +4,19 @@ import {
   LogoutOutlined,
   ProjectOutlined,
   TeamOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import { Button, Layout, Menu, theme, message as messageApi } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import ProjectCard from "@/components/project-card";
 
 const { Header, Content } = Layout;
 
 const App: React.FC = () => {
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { colorBgContainer },
   } = theme.useToken();
   const router = useRouter();
 
@@ -61,6 +63,39 @@ const App: React.FC = () => {
     },
   ];
 
+  const projectCards = [
+    {
+      title: "Project 1",
+      description: "Description for project 1",
+      imageUrl: "https://placehold.co/50x50/3F96FE/FFFFFF.png",
+      owner: "Owner 1",
+    },
+    {
+      title: "Project 2",
+      description: "Description for project 2",
+      imageUrl: "https://placehold.co/50x50/3F96FE/FFFFFF.png",
+      owner: "Owner 2",
+    },
+    {
+      title: "Project 3",
+      description: "Description for project 3",
+      imageUrl: "https://placehold.co/50x50/3F96FE/FFFFFF.png",
+      owner: "Owner 3",
+    },
+    {
+      title: "Project 4",
+      description: "Description for project 4",
+      imageUrl: "https://placehold.co/50x50/3F96FE/FFFFFF.png",
+      owner: "Owner 4",
+    },
+    {
+      title: "Project 5",
+      description: "Description for project 5",
+      imageUrl: "https://placehold.co/50x50/3F96FE/FFFFFF.png",
+      owner: "Owner 5",
+    },
+  ];
+
   return (
     <Layout>
       <Header
@@ -72,7 +107,7 @@ const App: React.FC = () => {
           display: "flex",
           alignItems: "center",
           background: colorBgContainer,
-          boxShadow: "0 2px 8px #f0f1f2",
+          borderBottom: "1px solid #e0e0e0",
           padding: "0 16px",
         }}
       >
@@ -105,16 +140,22 @@ const App: React.FC = () => {
           Logout
         </Button>
       </Header>
-      <Content style={{ padding: "16px 48px" }}>
-        <div
-          style={{
-            padding: 24,
-            minHeight: "100vh",
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
-          }}
-        >
-          Content
+      <Content className="p-4 px-6 md:px-12 bg-white">
+        <div className="flex justify-end my-4">
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => {}}>
+            Create a new project
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-8">
+          {projectCards.map((project, index) => (
+            <ProjectCard
+              key={index}
+              title={project.title}
+              description={project.description}
+              imageUrl={project.imageUrl}
+              owner={project.owner}
+            />
+          ))}
         </div>
       </Content>
     </Layout>
