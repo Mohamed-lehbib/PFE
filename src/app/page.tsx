@@ -1,27 +1,18 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   LogoutOutlined,
   ProjectOutlined,
-  VideoCameraOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
-import {
-  Breadcrumb,
-  Button,
-  Layout,
-  Menu,
-  theme,
-  message as messageApi,
-} from "antd";
+import { Button, Layout, Menu, theme, message as messageApi } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
-const { Header, Sider, Content } = Layout;
+const { Header, Content } = Layout;
 
 const App: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -65,96 +56,67 @@ const App: React.FC = () => {
     },
     {
       key: "2",
-      icon: <VideoCameraOutlined />,
-      label: "nav 2",
+      icon: <TeamOutlined />,
+      label: "Team",
     },
   ];
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
+    <Layout>
+      <Header
         style={{
-          height: "100vh",
-          // backgroundColor: "#2563EB"
-        }} // blue-600
+          position: "sticky",
+          top: 0,
+          zIndex: 1,
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          background: colorBgContainer,
+          boxShadow: "0 2px 8px #f0f1f2",
+          padding: "0 16px",
+        }}
       >
-        <div className="demo-logo-vertical" />
+        <div
+          style={{ marginRight: "auto", display: "flex", alignItems: "center" }}
+        >
+          <Image
+            src="/assets/images/icon.svg"
+            alt="App Icon"
+            width={32}
+            height={32}
+            style={{ marginLeft: "40px" }}
+          />
+        </div>
         <Menu
-          theme="light" // Change theme to light to avoid dark default background
-          mode="inline"
+          theme="light"
+          mode="horizontal"
           defaultSelectedKeys={["1"]}
           items={menuItems}
-          style={{
-            height: "calc(100% - 64px)",
-            borderRight: 0,
-            // backgroundColor: "#2563EB",
-          }} // adjust menu height and background color
+          style={{ flex: 1, justifyContent: "center", minWidth: 0 }}
         />
+        <Button
+          type="primary"
+          icon={<LogoutOutlined />}
+          onClick={handleLogout}
+          style={{
+            marginRight: "40px",
+          }}
+        >
+          Logout
+        </Button>
+      </Header>
+      <Content style={{ padding: "16px 48px" }}>
         <div
           style={{
-            padding: "10px 20px",
-            position: "absolute",
-            bottom: 0,
-            width: "100%",
-          }}
-        >
-          <Button
-            type="primary"
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-            style={{
-              width: "100%",
-            }}
-          >
-            {!collapsed && "Logout"}
-          </Button>
-        </div>
-      </Sider>
-      <Layout>
-        <Header
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 1,
-            width: "100%",
-            padding: 0,
+            padding: 24,
+            minHeight: "100vh",
             background: colorBgContainer,
-            display: "flex",
-            alignItems: "center",
+            borderRadius: borderRadiusLG,
           }}
         >
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: "16px",
-              width: 64,
-              height: 64,
-            }}
-          />
-        </Header>
-        <Content style={{ padding: "0 48px" }}>
-          <Breadcrumb style={{ margin: "16px 0" }}>
-            <Breadcrumb.Item>Home</Breadcrumb.Item>
-            <Breadcrumb.Item>List</Breadcrumb.Item>
-            <Breadcrumb.Item>App</Breadcrumb.Item>
-          </Breadcrumb>
-          <div
-            style={{
-              padding: 24,
-              minHeight: 380,
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-            }}
-          >
-            Content
-          </div>
-        </Content>
-      </Layout>
+          Content
+        </div>
+      </Content>
     </Layout>
   );
 };
