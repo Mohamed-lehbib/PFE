@@ -1,4 +1,3 @@
-// pages/api/project/create.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createClientForServer } from '@/utils/supabase/server';
 import uploadOneFile from '@/queries/file/upload-file/upload-file';
