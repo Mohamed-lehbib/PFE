@@ -1,16 +1,24 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
   LogoutOutlined,
   ProjectOutlined,
   TeamOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import { Button, Layout, Menu, theme, message as messageApi } from "antd";
+import {
+  Button,
+  Layout,
+  Menu,
+  theme,
+  Modal,
+  message as messageApi,
+} from "antd";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ProjectCard from "@/components/project-card";
+import ProjectUploader from "@/components/create-project-form";
 
 const { Header, Content } = Layout;
 
@@ -19,6 +27,7 @@ const App: React.FC = () => {
     token: { colorBgContainer },
   } = theme.useToken();
   const router = useRouter();
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleLogout = async () => {
     console.log("Logout function called");
@@ -48,6 +57,19 @@ const App: React.FC = () => {
         className: "custom-class",
       });
     }
+  };
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleSuccess = () => {
+    messageApi.success("Project created successfully!");
+    setIsModalVisible(false);
   };
 
   const menuItems = [
@@ -133,17 +155,15 @@ const App: React.FC = () => {
           type="primary"
           icon={<LogoutOutlined />}
           onClick={handleLogout}
-          style={{
-            marginRight: "40px",
-          }}
+          style={{ marginRight: "40px" }}
         >
           Logout
         </Button>
       </Header>
       <Content className="p-4 px-6 md:px-12 bg-white">
         <div className="flex justify-end my-4">
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => {}}>
-            Create a new project
+          <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
+            Create new project
           </Button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-8">
@@ -157,6 +177,14 @@ const App: React.FC = () => {
             />
           ))}
         </div>
+        <Modal
+          title="Create New Project"
+          visible={isModalVisible}
+          onCancel={handleCancel}
+          footer={null}
+        >
+          <ProjectUploader onSuccess={handleSuccess} />
+        </Modal>
       </Content>
     </Layout>
   );
