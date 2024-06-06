@@ -5,15 +5,17 @@ import {
   ProjectOutlined,
   TeamOutlined,
   PlusOutlined,
+  MoreOutlined,
 } from "@ant-design/icons";
 import {
   Button,
   Layout,
   Menu,
-  theme,
   Modal,
   message as messageApi,
   Spin,
+  theme,
+  Dropdown,
 } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
@@ -40,6 +42,8 @@ const App: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -115,6 +119,52 @@ const App: React.FC = () => {
     fetchProjects();
   };
 
+  const handleDelete = async () => {
+    if (!projectToDelete) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/project/delete/${projectToDelete}`, {
+        method: "DELETE",
+      });
+      const result = await response.json();
+      if (response.status === 200) {
+        messageApi.success({
+          content: "Project deleted successfully",
+          duration: 2,
+          className: "custom-class",
+        });
+        fetchProjects();
+      } else {
+        messageApi.error({
+          content: `Failed to delete project: ${result.error}`,
+          duration: 10,
+          className: "custom-class",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      messageApi.error({
+        content: `Failed to delete project: ${error}`,
+        duration: 10,
+        className: "custom-class",
+      });
+    } finally {
+      setLoading(false);
+      setDeleteModalVisible(false);
+      setProjectToDelete(null);
+    }
+  };
+
+  const showDeleteModal = (projectId: string) => {
+    setProjectToDelete(projectId);
+    setDeleteModalVisible(true);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalVisible(false);
+    setProjectToDelete(null);
+  };
+
   const menuItems = [
     {
       key: "1",
@@ -185,6 +235,7 @@ const App: React.FC = () => {
                 description={project.project_description}
                 imageUrl={project.project_logo}
                 owner={project.user_email}
+                onDelete={() => showDeleteModal(project.project_id)}
               />
             ))}
           </div>
@@ -201,6 +252,16 @@ const App: React.FC = () => {
               setUploading={setUploading}
             />
           </Spin>
+        </Modal>
+        <Modal
+          title="Confirm Deletion"
+          visible={deleteModalVisible}
+          onOk={handleDelete}
+          onCancel={handleDeleteCancel}
+          okText="Yes, delete it"
+          cancelText="Cancel"
+        >
+          <p>Are you sure you want to delete this project?</p>
         </Modal>
       </Content>
     </Layout>
