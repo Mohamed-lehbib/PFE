@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import TypingText from "@/components/typing-text";
-import LoadingOverlay from "react-loading-overlay-ts";
-import { message as messageApi } from "antd";
+import { message as messageApi, Button, Spin } from "antd";
 
 interface FormData {
   name?: string;
@@ -16,7 +15,7 @@ interface FormData {
 
 const Auth = () => {
   const [mode, setMode] = useState("signin"); // Default mode is "signin"
-  const [isActive, setIsActive] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -32,7 +31,7 @@ const Auth = () => {
   } = useForm<FormData>();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    setIsActive(true);
+    setLoading(true);
     try {
       const response = await fetch(`/api/auth?mode=${mode}`, {
         method: "POST",
@@ -62,7 +61,7 @@ const Auth = () => {
             className: "custom-class",
           });
         }
-        setIsActive(false);
+        setLoading(false);
         return;
       }
 
@@ -82,7 +81,7 @@ const Auth = () => {
         className: "custom-class",
       });
     }
-    setIsActive(false);
+    setLoading(false);
   };
 
   const handleForgotPassword = () => {
@@ -102,167 +101,165 @@ const Auth = () => {
   };
 
   return (
-    <LoadingOverlay active={isActive} spinner>
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="flex w-full h-screen">
-          <motion.div
-            initial={{ opacity: 0, x: mode === "signup" ? -100 : 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-1/2 p-8 space-y-6 flex flex-col justify-center bg-white px-24"
-          >
-            <h2 className="text-3xl font-bold text-center">{getTitle(mode)}</h2>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {mode === "signup" && (
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Name
-                  </label>
-                  <input
-                    id="name"
-                    type="text"
-                    {...register("name", { required: "Name is required" })}
-                    className="w-full px-3 py-2 mt-1 border rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                  {errors.name && (
-                    <p className="text-sm text-red-600">
-                      {errors.name.message}
-                    </p>
-                  )}
-                </div>
-              )}
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex w-full h-screen">
+        <motion.div
+          initial={{ opacity: 0, x: mode === "signup" ? -100 : 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-1/2 p-8 space-y-6 flex flex-col justify-center bg-white px-24"
+        >
+          <h2 className="text-3xl font-bold text-center">{getTitle(mode)}</h2>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {mode === "signup" && (
               <div>
                 <label
-                  htmlFor="email"
+                  htmlFor="name"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Email
+                  Name
                 </label>
                 <input
-                  id="email"
-                  type="email"
-                  {...register("email", { required: "Email is required" })}
+                  id="name"
+                  type="text"
+                  {...register("name", { required: "Name is required" })}
                   className="w-full px-3 py-2 mt-1 border rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
-                {errors.email && (
-                  <p className="text-sm text-red-600">{errors.email.message}</p>
+                {errors.name && (
+                  <p className="text-sm text-red-600">{errors.name.message}</p>
                 )}
               </div>
-              {mode !== "reset-password" && (
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    {...register("password", {
-                      required: "Password is required",
-                    })}
-                    className="w-full px-3 py-2 mt-1 border rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                  {errors.password && (
-                    <p className="text-sm text-red-600">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </div>
-              )}
-              {mode === "signup" && (
-                <div>
-                  <label
-                    htmlFor="confirmPassword"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Confirm Password
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    {...register("confirmPassword", {
-                      required: "Confirm Password is required",
-                      validate: (value) =>
-                        value === watch("password") || "Passwords do not match",
-                    })}
-                    className="w-full px-3 py-2 mt-1 border rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                  {errors.confirmPassword && (
-                    <p className="text-sm text-red-600">
-                      {errors.confirmPassword.message}
-                    </p>
-                  )}
-                </div>
-              )}
-              <button
-                type="submit"
-                className="w-full px-4 py-2 font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            )}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
               >
-                {getTitle(mode)}
-              </button>
-            </form>
-            {mode === "signin" && (
-              <div className="text-sm text-center text-gray-600">
-                <button
-                  onClick={handleForgotPassword}
-                  className="font-medium text-blue-600 hover:text-blue-500"
-                >
-                  Forgot Password?
-                </button>
-              </div>
-            )}
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                {...register("email", { required: "Email is required" })}
+                className="w-full px-3 py-2 mt-1 border rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+              {errors.email && (
+                <p className="text-sm text-red-600">{errors.email.message}</p>
+              )}
+            </div>
             {mode !== "reset-password" && (
-              <div className="text-sm text-center text-gray-600">
-                {mode === "signup"
-                  ? "Already have an account?"
-                  : "Don't have an account?"}{" "}
-                <button
-                  onClick={() =>
-                    router.push(
-                      `/signin?mode=${mode === "signup" ? "signin" : "signup"}`
-                    )
-                  }
-                  className="font-medium text-blue-600 hover:text-blue-500"
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
                 >
-                  {mode === "signup" ? "Sign In" : "Sign Up"}
-                </button>
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  {...register("password", {
+                    required: "Password is required",
+                  })}
+                  className="w-full px-3 py-2 mt-1 border rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+                {errors.password && (
+                  <p className="text-sm text-red-600">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
             )}
-            {mode === "reset-password" && (
-              <div className="text-sm text-center text-gray-600">
-                <span>Try signing in again</span>
-                <button
-                  onClick={() => router.push(`/signin?mode=signin`)}
-                  className="font-medium text-blue-600 hover:text-blue-500 ml-1"
+            {mode === "signup" && (
+              <div>
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-medium text-gray-700"
                 >
-                  Back
-                </button>
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  {...register("confirmPassword", {
+                    required: "Confirm Password is required",
+                    validate: (value) =>
+                      value === watch("password") || "Passwords do not match",
+                  })}
+                  className="w-full px-3 py-2 mt-1 border rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+                {errors.confirmPassword && (
+                  <p className="text-sm text-red-600">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
               </div>
             )}
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: mode === "signup" ? 100 : -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-1/2 p-8 space-y-6 flex flex-col justify-center items-center bg-blue-600 text-white rounded-l-xl px-24"
-          >
-            <h2 className="text-5xl font-extrabold text-center">
-              Hello, Friend!
-            </h2>
-            <TypingText className="text-xl text-left">
-              This app is created for generating admin dashboards with logic,
-              just a few clicks away. Experience seamless and efficient
-              dashboard creation like never before.
-            </TypingText>
-          </motion.div>
-        </div>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              className="w-full"
+            >
+              {getTitle(mode)}
+            </Button>
+          </form>
+          {mode === "signin" && (
+            <div className="text-sm text-center text-gray-600">
+              <button
+                onClick={handleForgotPassword}
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Forgot Password?
+              </button>
+            </div>
+          )}
+          {mode !== "reset-password" && (
+            <div className="text-sm text-center text-gray-600">
+              {mode === "signup"
+                ? "Already have an account?"
+                : "Don't have an account?"}{" "}
+              <button
+                onClick={() =>
+                  router.push(
+                    `/signin?mode=${mode === "signup" ? "signin" : "signup"}`
+                  )
+                }
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                {mode === "signup" ? "Sign In" : "Sign Up"}
+              </button>
+            </div>
+          )}
+          {mode === "reset-password" && (
+            <div className="text-sm text-center text-gray-600">
+              <span>Try signing in again</span>
+              <button
+                onClick={() => router.push(`/signin?mode=signin`)}
+                className="font-medium text-blue-600 hover:text-blue-500 ml-1"
+              >
+                Back
+              </button>
+            </div>
+          )}
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: mode === "signup" ? 100 : -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-1/2 p-8 space-y-6 flex flex-col justify-center items-center bg-blue-600 text-white rounded-l-xl px-24"
+        >
+          <h2 className="text-5xl font-extrabold text-center">
+            Hello, Friend!
+          </h2>
+          <TypingText className="text-xl text-left">
+            This app is created for generating admin dashboards with logic, just
+            a few clicks away. Experience seamless and efficient dashboard
+            creation like never before.
+          </TypingText>
+        </motion.div>
       </div>
-    </LoadingOverlay>
+    </div>
   );
 };
 
