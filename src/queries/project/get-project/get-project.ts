@@ -1,4 +1,3 @@
-import { getUserEmailById } from '@/queries/user/get-user-email/get-user-email';
 import { createClient } from '@supabase/supabase-js';
 
 export async function getUserProjects(user_id: string) {
@@ -9,26 +8,29 @@ export async function getUserProjects(user_id: string) {
     );
 
     const { data: projects, error: projectsError } = await supabase
-      .from('project')
-      .select('name, description, project_logo, user_id, id')
-      .eq('user_id', user_id);
+      .from('project_user_view')
+      .select(`
+        project_id,
+        project_name,
+        project_description,
+        project_logo,
+        project_user_id,
+        project_team_id,
+        project_password,
+        project_progress,
+        project_created_at,
+        user_email,
+        user_metadata
+      `)
+      .eq('project_user_id', user_id)
+      .order('project_created_at', { ascending: false });
 
     if (projectsError) {
       console.error('Supabase projects fetch error:', projectsError.message);
       return { status: 400, error: projectsError.message };
     }
 
-    const projectsWithEmails = await Promise.all(
-      projects.map(async project => {
-        const emailResponse = await getUserEmailById(project.user_id);
-        if ('error' in emailResponse) {
-          return { ...project, email: null, emailError: emailResponse.error };
-        }
-        return { ...project, email: emailResponse.email };
-      })
-    );
-
-    return { status: 200, projects: projectsWithEmails };
+    return { status: 200, projects };
   } catch (error: any) {
     console.error('Error fetching user projects:', error);
     return { status: 500, error: error.message || 'Internal server error' };

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClientForServer } from '@/utils/supabase/server';
 import { getUserProjects } from '@/queries/project/get-project/get-project';
 
+export const revalidate = 0
 export async function GET(req: NextRequest) {
   try {
     const supabase = createClientForServer();

@@ -22,11 +22,11 @@ import ProjectCard from "@/components/project-card";
 import ProjectUploader from "@/components/create-project-form";
 
 interface Project {
-  email: string;
+  user_email: string;
   project_logo: string;
-  name: string;
-  description: string;
-  id: string;
+  project_name: string;
+  project_description: string;
+  project_id: string;
 }
 
 const { Header, Content } = Layout;
@@ -178,13 +178,13 @@ const App: React.FC = () => {
         </div>
         <Spin spinning={loading}>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-8">
-            {projects.map((project, index) => (
+            {projects.map((project) => (
               <ProjectCard
-                key={project.id}
-                title={project.name}
-                description={project.description}
+                key={project.project_id}
+                title={project.project_name}
+                description={project.project_description}
                 imageUrl={project.project_logo}
-                owner={project.email}
+                owner={project.user_email}
               />
             ))}
           </div>
