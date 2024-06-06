@@ -8,3 +8,7 @@ CREATE TABLE project (
     password VARCHAR(255),
     progress VARCHAR(255)
 );
+
+-- adding the created_at column
+ALTER TABLE public.project
+ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();
