@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   LogoutOutlined,
   ProjectOutlined,
@@ -13,12 +13,20 @@ import {
   theme,
   Modal,
   message as messageApi,
+  Spin,
 } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ProjectCard from "@/components/project-card";
 import ProjectUploader from "@/components/create-project-form";
+
+interface Project {
+  email: string;
+  project_logo: string;
+  name: string;
+  description: string;
+}
 
 const { Header, Content } = Layout;
 
@@ -28,6 +36,39 @@ const App: React.FC = () => {
   } = theme.useToken();
   const router = useRouter();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false); // Add state for uploading
+
+  const fetchProjects = useCallback(async () => {
+    try {
+      const response = await fetch("/api/project/get-projects");
+      const result = await response.json();
+
+      if (response.status === 200) {
+        setProjects(result.projects);
+      } else {
+        messageApi.error({
+          content: `Failed to fetch projects: ${result.error}`,
+          duration: 10,
+          className: "custom-class",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      messageApi.error({
+        content: `Failed to fetch projects: ${error}`,
+        duration: 10,
+        className: "custom-class",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const handleLogout = async () => {
     console.log("Logout function called");
@@ -70,6 +111,9 @@ const App: React.FC = () => {
   const handleSuccess = () => {
     messageApi.success("Project created successfully!");
     setIsModalVisible(false);
+    // Refresh the projects list after successful upload
+    setLoading(true);
+    fetchProjects();
   };
 
   const menuItems = [
@@ -82,39 +126,6 @@ const App: React.FC = () => {
       key: "2",
       icon: <TeamOutlined />,
       label: "Team",
-    },
-  ];
-
-  const projectCards = [
-    {
-      title: "Project 1",
-      description: "Description for project 1",
-      imageUrl: "https://placehold.co/50x50/3F96FE/FFFFFF.png",
-      owner: "Owner 1",
-    },
-    {
-      title: "Project 2",
-      description: "Description for project 2",
-      imageUrl: "https://placehold.co/50x50/3F96FE/FFFFFF.png",
-      owner: "Owner 2",
-    },
-    {
-      title: "Project 3",
-      description: "Description for project 3",
-      imageUrl: "https://placehold.co/50x50/3F96FE/FFFFFF.png",
-      owner: "Owner 3",
-    },
-    {
-      title: "Project 4",
-      description: "Description for project 4",
-      imageUrl: "https://placehold.co/50x50/3F96FE/FFFFFF.png",
-      owner: "Owner 4",
-    },
-    {
-      title: "Project 5",
-      description: "Description for project 5",
-      imageUrl: "https://placehold.co/50x50/3F96FE/FFFFFF.png",
-      owner: "Owner 5",
     },
   ];
 
@@ -166,24 +177,31 @@ const App: React.FC = () => {
             Create new project
           </Button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-8">
-          {projectCards.map((project, index) => (
-            <ProjectCard
-              key={index}
-              title={project.title}
-              description={project.description}
-              imageUrl={project.imageUrl}
-              owner={project.owner}
-            />
-          ))}
-        </div>
+        <Spin spinning={loading}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-8">
+            {projects.map((project, index) => (
+              <ProjectCard
+                key={index}
+                title={project.name}
+                description={project.description}
+                imageUrl={project.project_logo}
+                owner={project.email}
+              />
+            ))}
+          </div>
+        </Spin>
         <Modal
           title="Create New Project"
           visible={isModalVisible}
           onCancel={handleCancel}
           footer={null}
         >
-          <ProjectUploader onSuccess={handleSuccess} />
+          <Spin spinning={uploading}>
+            <ProjectUploader
+              onSuccess={handleSuccess}
+              setUploading={setUploading}
+            />
+          </Spin>
         </Modal>
       </Content>
     </Layout>

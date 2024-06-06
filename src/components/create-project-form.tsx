@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import { message } from "antd";
+import { message, Spin } from "antd";
 
-const ProjectUploader: React.FC<{ onSuccess: () => void }> = ({
-  onSuccess,
-}) => {
+const ProjectUploader: React.FC<{
+  onSuccess: () => void;
+  setUploading: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ onSuccess, setUploading }) => {
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [name, setName] = useState<string>("");
@@ -31,6 +32,7 @@ const ProjectUploader: React.FC<{ onSuccess: () => void }> = ({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setUploading(true);
     try {
       const formData = new FormData();
       formData.append("name", name);
@@ -56,7 +58,9 @@ const ProjectUploader: React.FC<{ onSuccess: () => void }> = ({
       }
     } catch (error: any) {
       console.error("Error creating project:", error);
-      message.error(error || "Failed to create project");
+      message.error(error.message || "Failed to create project");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -80,7 +84,7 @@ const ProjectUploader: React.FC<{ onSuccess: () => void }> = ({
               </button>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed rounded-full cursor-pointer">
+            <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed rounded-full cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all duration-200">
               <PlusOutlined className="text-2xl" />
               <span>Upload</span>
               <input

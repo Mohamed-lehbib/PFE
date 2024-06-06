@@ -14,8 +14,8 @@ export async function getUserEmailById(userId: string) {
     }
 
     return { error: 'User not found', status: 404 };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching user email:', error);
-    return { error: 'Internal server error', status: 500 };
+    return { error: error.message || 'Internal server error', status: 500 };
   }
 }
