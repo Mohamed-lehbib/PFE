@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import { Dropdown, Menu } from "antd";
 import { MoreOutlined } from "@ant-design/icons";
@@ -7,7 +6,7 @@ import Image from "next/image";
 interface ProjectCardProps {
   title: string;
   description: string;
-  imageUrl: string;
+  imageUrl: string | null;
   owner: string;
 }
 
@@ -24,6 +23,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     </Menu>
   );
 
+  const fallbackImage = "/assets/images/fallback-image.jpeg"; // Path to your fallback image
+
   return (
     <div className="bg-white px-6 py-6 rounded border h-[12.5rem] flex flex-col justify-between relative">
       <Dropdown
@@ -35,7 +36,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       </Dropdown>
       <div className="flex items-center mb-2 mt-8">
         <Image
-          src={imageUrl}
+          src={imageUrl || fallbackImage}
           alt={title}
           width={70}
           height={70}

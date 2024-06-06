@@ -4,15 +4,13 @@ export async function getUserEmailById(userId: string) {
   try {
     const supabase = createClient();
     const { data, error } = await supabase.auth.admin.getUserById(userId);
-
     if (error) {
       return { error: error.message, status: error.status };
     }
-
-    if (data && data.user) {
-      return { email: data.user.email, status: 200 };
+    const email = data?.user?.email;
+    if (email) {
+      return { email, status: 200 };
     }
-
     return { error: 'User not found', status: 404 };
   } catch (error: any) {
     console.error('Error fetching user email:', error);

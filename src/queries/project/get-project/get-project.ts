@@ -10,7 +10,7 @@ export async function getUserProjects(user_id: string) {
 
     const { data: projects, error: projectsError } = await supabase
       .from('project')
-      .select('name, description, project_logo, user_id')
+      .select('name, description, project_logo, user_id, id')
       .eq('user_id', user_id);
 
     if (projectsError) {

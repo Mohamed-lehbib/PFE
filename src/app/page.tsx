@@ -26,6 +26,7 @@ interface Project {
   project_logo: string;
   name: string;
   description: string;
+  id: string;
 }
 
 const { Header, Content } = Layout;
@@ -38,13 +39,12 @@ const App: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false); // Add state for uploading
+  const [uploading, setUploading] = useState(false);
 
   const fetchProjects = useCallback(async () => {
     try {
       const response = await fetch("/api/project/get-projects");
       const result = await response.json();
-
       if (response.status === 200) {
         setProjects(result.projects);
       } else {
@@ -111,7 +111,6 @@ const App: React.FC = () => {
   const handleSuccess = () => {
     messageApi.success("Project created successfully!");
     setIsModalVisible(false);
-    // Refresh the projects list after successful upload
     setLoading(true);
     fetchProjects();
   };
@@ -181,7 +180,7 @@ const App: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-8">
             {projects.map((project, index) => (
               <ProjectCard
-                key={index}
+                key={project.id}
                 title={project.name}
                 description={project.description}
                 imageUrl={project.project_logo}
@@ -192,7 +191,7 @@ const App: React.FC = () => {
         </Spin>
         <Modal
           title="Create New Project"
-          visible={isModalVisible}
+          open={isModalVisible}
           onCancel={handleCancel}
           footer={null}
         >

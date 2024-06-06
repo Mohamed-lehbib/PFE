@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import { message, Spin } from "antd";
+import { message } from "antd";
 
 const ProjectUploader: React.FC<{
   onSuccess: () => void;
@@ -12,11 +12,11 @@ const ProjectUploader: React.FC<{
   const [description, setDescription] = useState<string>("");
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files && event.target.files[0];
-    if (selectedFile && selectedFile.type.startsWith("image/")) {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile?.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        if (e.target && e.target.result) {
+        if (e.target?.result) {
           setFilePreview(e.target.result as string);
         }
       };
@@ -40,12 +40,10 @@ const ProjectUploader: React.FC<{
       if (file) {
         formData.append("project_logo", file);
       }
-
       const response = await fetch("/api/project/create", {
         method: "POST",
         body: formData,
       });
-
       if (response.ok) {
         onSuccess();
         setFile(null);
@@ -72,7 +70,7 @@ const ProjectUploader: React.FC<{
             <div className="relative">
               <img
                 src={filePreview}
-                alt="uploaded image"
+                alt="Preview of uploaded file"
                 className="rounded-full object-cover w-24 h-24"
               />
               <button
