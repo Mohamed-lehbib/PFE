@@ -6,21 +6,14 @@ import {
   TeamOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import {
-  Button,
-  Layout,
-  Menu,
-  Modal,
-  message as messageApi,
-  Spin,
-  theme,
-} from "antd";
+import { Button, Layout, Menu, message as messageApi, Spin, theme } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ProjectCard from "@/components/project-card";
-import ProjectUploader from "@/components/create-project-form";
-import ProjectEditor from "@/components/update-project-form";
+import CreateProjectModal from "@/components/modals/create-project-modal";
+import DeleteProjectModal from "@/components/modals/delete-project-modal";
+import UpdateProjectModal from "@/components/modals/update-project-modal";
 
 interface Project {
   user_email: string;
@@ -249,49 +242,28 @@ const App: React.FC = () => {
           </div>
         </Spin>
         {/* The create project Modal */}
-        <Modal
-          title="Create New Project"
-          open={isModalVisible}
-          onCancel={handleCancel}
-          footer={null}
-        >
-          <Spin spinning={uploading}>
-            <ProjectUploader
-              onSuccess={handleSuccess}
-              setUploading={setUploading}
-            />
-          </Spin>
-        </Modal>
+        <CreateProjectModal
+          isModalVisible={isModalVisible}
+          handleCancel={handleCancel}
+          uploading={uploading}
+          handleSuccess={handleSuccess}
+          setUploading={setUploading}
+        />
         {/* The delete project Modal */}
-        <Modal
-          title="Confirm Deletion"
-          open={deleteModalVisible}
-          onOk={handleDelete}
+        <DeleteProjectModal
+          isVisible={deleteModalVisible}
+          onConfirm={handleDelete}
           onCancel={handleDeleteCancel}
-          okText="Yes, delete it"
-          cancelText="Cancel"
-        >
-          <p>Are you sure you want to delete this project?</p>
-        </Modal>
+        />
         {/* The Edit project Modal */}
-        <Modal
-          title="Edit Project"
-          open={editModalVisible}
-          onCancel={() => setEditModalVisible(false)}
-          footer={null}
-        >
-          {selectedProject && (
-            <ProjectEditor
-              projectId={selectedProject.project_id}
-              onSuccess={() => {
-                setEditModalVisible(false);
-                setLoading(true);
-                fetchProjects();
-              }}
-              setUploading={setUploading}
-            />
-          )}
-        </Modal>
+        <UpdateProjectModal
+          editModalVisible={editModalVisible}
+          selectedProject={selectedProject}
+          setEditModalVisible={setEditModalVisible}
+          setLoading={setLoading}
+          fetchProjects={fetchProjects}
+          setUploading={setUploading}
+        />
       </Content>
     </Layout>
   );
