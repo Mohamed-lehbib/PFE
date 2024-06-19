@@ -62,14 +62,6 @@ const App: React.FC = () => {
     fetchProjects();
   }, [fetchProjects]);
 
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-
   const handleSuccess = () => {
     messageApi.success("Project created successfully!");
     setIsModalVisible(false);
@@ -113,16 +105,6 @@ const App: React.FC = () => {
     }
   };
 
-  const showDeleteModal = (projectId: string) => {
-    setProjectToDelete(projectId);
-    setDeleteModalVisible(true);
-  };
-
-  const handleDeleteCancel = () => {
-    setDeleteModalVisible(false);
-    setProjectToDelete(null);
-  };
-
   // Handle edit button click
   const handleEdit = (project: Project) => {
     setSelectedProject(project);
@@ -148,7 +130,11 @@ const App: React.FC = () => {
       </Header>
       <Content className="p-4 px-6 md:px-12 bg-white">
         <div className="flex justify-end my-4">
-          <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setIsModalVisible(true)}
+          >
             Create new project
           </Button>
         </div>
@@ -161,7 +147,10 @@ const App: React.FC = () => {
                 description={project.project_description}
                 imageUrl={project.project_logo}
                 owner={project.user_email}
-                onDelete={() => showDeleteModal(project.project_id)}
+                onDelete={() => {
+                  setProjectToDelete(project.project_id);
+                  setDeleteModalVisible(true);
+                }}
                 onEdit={() => handleEdit(project)}
               />
             ))}
@@ -170,7 +159,7 @@ const App: React.FC = () => {
         {/* The create project Modal */}
         <CreateProjectModal
           isModalVisible={isModalVisible}
-          handleCancel={handleCancel}
+          handleCancel={() => setIsModalVisible(false)}
           uploading={uploading}
           handleSuccess={handleSuccess}
           setUploading={setUploading}
@@ -179,7 +168,10 @@ const App: React.FC = () => {
         <DeleteProjectModal
           isVisible={deleteModalVisible}
           onConfirm={handleDelete}
-          onCancel={handleDeleteCancel}
+          onCancel={() => {
+            setDeleteModalVisible(false);
+            setProjectToDelete(null);
+          }}
         />
         {/* The Edit project Modal */}
         <UpdateProjectModal
