@@ -44,7 +44,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       </Dropdown>
       <div className="flex items-center mb-2 mt-8">
         <Image
-          src={imageUrl || fallbackImage}
+          src={imageUrl ?? fallbackImage}
           alt={title}
           width={70}
           height={70}

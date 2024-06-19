@@ -57,7 +57,6 @@ const ProjectEditor: React.FC<{
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    // setUploading(true);
     setLoading(true);
     try {
       const formData = new FormData();
@@ -87,7 +86,6 @@ const ProjectEditor: React.FC<{
       console.error("Error updating project:", error);
       message.error(error.message || "Failed to update project");
     } finally {
-      //   setUploading(false);
       setLoading(false);
     }
   };

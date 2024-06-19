@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import TypingText from "@/components/typing-text";
-import { message as messageApi, Button, Spin } from "antd";
+import { message as messageApi, Button } from "antd";
 
 interface FormData {
   name?: string;

@@ -5,7 +5,6 @@ import {
   ProjectOutlined,
   TeamOutlined,
   PlusOutlined,
-  MoreOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -15,7 +14,6 @@ import {
   message as messageApi,
   Spin,
   theme,
-  Dropdown,
 } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
@@ -267,7 +265,7 @@ const App: React.FC = () => {
         {/* The delete project Modal */}
         <Modal
           title="Confirm Deletion"
-          visible={deleteModalVisible}
+          open={deleteModalVisible}
           onOk={handleDelete}
           onCancel={handleDeleteCancel}
           okText="Yes, delete it"
@@ -278,7 +276,7 @@ const App: React.FC = () => {
         {/* The Edit project Modal */}
         <Modal
           title="Edit Project"
-          visible={editModalVisible}
+          open={editModalVisible}
           onCancel={() => setEditModalVisible(false)}
           footer={null}
         >
