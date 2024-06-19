@@ -15,7 +15,7 @@ export default function DeleteProjectModal({
   return (
     <Modal
       title="Confirm Deletion"
-      visible={isVisible}
+      open={isVisible}
       onOk={onConfirm}
       onCancel={onCancel}
       okText="Yes, delete it"
