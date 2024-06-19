@@ -1,19 +1,13 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  LogoutOutlined,
-  ProjectOutlined,
-  TeamOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
-import { Button, Layout, Menu, message as messageApi, Spin, theme } from "antd";
-import { createClient } from "@/utils/supabase/client";
+import { PlusOutlined } from "@ant-design/icons";
+import { Button, Layout, message as messageApi, Spin, theme } from "antd";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import ProjectCard from "@/components/project-card";
 import CreateProjectModal from "@/components/modals/create-project-modal";
 import DeleteProjectModal from "@/components/modals/delete-project-modal";
 import UpdateProjectModal from "@/components/modals/update-project-modal";
+import Navbar from "@/components/navbar/navbar";
 
 interface Project {
   user_email: string;
@@ -67,36 +61,6 @@ const App: React.FC = () => {
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
-
-  const handleLogout = async () => {
-    console.log("Logout function called");
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.log("Supabase update password error:", error);
-        messageApi.error({
-          content: `Failed to logout: ${error.message}`,
-          duration: 10,
-          className: "custom-class",
-        });
-      } else {
-        messageApi.success({
-          content: `Logout successfully`,
-          duration: 2,
-          className: "custom-class",
-        });
-        router.push("/signin");
-      }
-    } catch (error) {
-      console.error(`Error logout : ${error}`);
-      messageApi.error({
-        content: `Failed to logout: ${error}`,
-        duration: 10,
-        className: "custom-class",
-      });
-    }
-  };
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -165,19 +129,6 @@ const App: React.FC = () => {
     setEditModalVisible(true);
   };
 
-  const menuItems = [
-    {
-      key: "1",
-      icon: <ProjectOutlined />,
-      label: "Projects",
-    },
-    {
-      key: "2",
-      icon: <TeamOutlined />,
-      label: "Team",
-    },
-  ];
-
   return (
     <Layout>
       <Header
@@ -193,32 +144,7 @@ const App: React.FC = () => {
           padding: "0 16px",
         }}
       >
-        <div
-          style={{ marginRight: "auto", display: "flex", alignItems: "center" }}
-        >
-          <Image
-            src="/assets/images/icon.svg"
-            alt="App Icon"
-            width={32}
-            height={32}
-            style={{ marginLeft: "40px" }}
-          />
-        </div>
-        <Menu
-          theme="light"
-          mode="horizontal"
-          defaultSelectedKeys={["1"]}
-          items={menuItems}
-          style={{ flex: 1, justifyContent: "center", minWidth: 0 }}
-        />
-        <Button
-          type="primary"
-          icon={<LogoutOutlined />}
-          onClick={handleLogout}
-          style={{ marginRight: "40px" }}
-        >
-          Logout
-        </Button>
+        <Navbar />
       </Header>
       <Content className="p-4 px-6 md:px-12 bg-white">
         <div className="flex justify-end my-4">
