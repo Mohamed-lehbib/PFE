@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ProjectCard from "@/components/project-card";
 import ProjectUploader from "@/components/create-project-form";
+import ProjectEditor from "@/components/update-project-form";
 
 interface Project {
   user_email: string;
@@ -44,6 +45,8 @@ const App: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -165,6 +168,12 @@ const App: React.FC = () => {
     setProjectToDelete(null);
   };
 
+  // Handle edit button click
+  const handleEdit = (project: Project) => {
+    setSelectedProject(project);
+    setEditModalVisible(true);
+  };
+
   const menuItems = [
     {
       key: "1",
@@ -236,10 +245,12 @@ const App: React.FC = () => {
                 imageUrl={project.project_logo}
                 owner={project.user_email}
                 onDelete={() => showDeleteModal(project.project_id)}
+                onEdit={() => handleEdit(project)}
               />
             ))}
           </div>
         </Spin>
+        {/* The create project Modal */}
         <Modal
           title="Create New Project"
           open={isModalVisible}
@@ -253,6 +264,7 @@ const App: React.FC = () => {
             />
           </Spin>
         </Modal>
+        {/* The delete project Modal */}
         <Modal
           title="Confirm Deletion"
           visible={deleteModalVisible}
@@ -262,6 +274,25 @@ const App: React.FC = () => {
           cancelText="Cancel"
         >
           <p>Are you sure you want to delete this project?</p>
+        </Modal>
+        {/* The Edit project Modal */}
+        <Modal
+          title="Edit Project"
+          visible={editModalVisible}
+          onCancel={() => setEditModalVisible(false)}
+          footer={null}
+        >
+          {selectedProject && (
+            <ProjectEditor
+              projectId={selectedProject.project_id}
+              onSuccess={() => {
+                setEditModalVisible(false);
+                setLoading(true);
+                fetchProjects();
+              }}
+              setUploading={setUploading}
+            />
+          )}
         </Modal>
       </Content>
     </Layout>

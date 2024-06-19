@@ -9,6 +9,7 @@ select
   p.password as project_password,
   p.progress as project_progress,
   p.created_at as project_created_at,
+  p.updated_at as project_updated_at,
   u.email as user_email,
   u.raw_user_meta_data as user_metadata
 from

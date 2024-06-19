@@ -9,6 +9,7 @@ interface ProjectCardProps {
   imageUrl: string | null;
   owner: string;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -17,10 +18,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   imageUrl,
   owner,
   onDelete,
+  onEdit,
 }) => {
   const menu = (
     <Menu>
-      <Menu.Item key="1" icon={<EditOutlined />}>
+      <Menu.Item key="1" icon={<EditOutlined />} onClick={onEdit}>
         Edit
       </Menu.Item>
       <Menu.Item key="2" icon={<DeleteOutlined />} onClick={onDelete}>

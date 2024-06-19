@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-export async function getUserProjects(user_id: string) {
+export async function getProjectById(project_id: number) {
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,15 +22,15 @@ export async function getUserProjects(user_id: string) {
         user_email,
         user_metadata
       `)
-      .eq('project_user_id', user_id)
-      .order('project_created_at', { ascending: false });
+      .eq('project_id', project_id)
+      .single();
 
     if (projectsError) {
       console.error('Supabase projects fetch error:', projectsError.message);
       return { status: 400, error: projectsError.message };
     }
 
-    return { status: 200, projects };
+    return { status: 200, project: projects };
   } catch (error: any) {
     console.error('Error fetching user projects:', error);
     return { status: 500, error: error.message || 'Internal server error' };
