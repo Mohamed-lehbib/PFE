@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
-import { Button, Layout, Menu, message as messageApi, Spin, theme } from "antd";
+import { Button, Menu, message as messageApi } from "antd";
 import {
   LogoutOutlined,
   ProjectOutlined,

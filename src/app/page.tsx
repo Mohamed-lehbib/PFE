@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Layout, message as messageApi, Spin, theme } from "antd";
-import { useRouter } from "next/navigation";
 import ProjectCard from "@/components/project-card";
 import CreateProjectModal from "@/components/modals/create-project-modal";
 import DeleteProjectModal from "@/components/modals/delete-project-modal";
@@ -23,7 +22,6 @@ const App: React.FC = () => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const router = useRouter();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
