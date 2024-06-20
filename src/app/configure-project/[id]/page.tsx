@@ -1,102 +1,95 @@
 "use client";
 import React, { useState } from "react";
-import { Upload, message, Button, Steps, Checkbox } from "antd";
-import { useRouter } from "next/navigation";
-import { TableAttributes } from "@/utils/tableParser/tableParser";
+import { Button, Steps } from "antd";
 import SupabaseCredentialsPage from "@/components/supabase-credentials-page";
+import TsFileUploader from "@/components/ts-file-uploader";
+import SelectTables from "@/components/select-tables";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const ConfigureProject = () => {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
-  const [url, setUrl] = useState("");
-  const [key, setKey] = useState("");
-  const [tables, setTables] = useState<TableAttributes[]>([]);
 
-  const handleSubmit = async () => {
-    if (!url || !key || tables.length === 0) {
-      message.error("Supabase credentials and a TypeScript file are required.");
-      return;
-    }
+  // Parse the current step from the query parameters
+  const params = useSearchParams();
+  const currentStep = parseInt(params.get("step") || "0", 10);
 
-    // Send credentials and parsed data to the API route
-    const response = await fetch("/api/store-data", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, key, tables }),
-    });
-
-    if (response.ok) {
-      router.push("/tables-overview");
-    } else {
-      message.error("Error saving data.");
-    }
-  };
+  // Set the current step based on the query parameters
+  if (!isNaN(currentStep) && currentStep !== current) {
+    setCurrent(currentStep);
+  }
 
   const steps = [
     {
       title: "Supabase Configuration",
-      content: <SupabaseCredentialsPage />,
+      content: <SupabaseCredentialsPage onNext={() => next()} />,
+    },
+    {
+      title: "Upload TypeScript File",
+      content: (
+        <TsFileUploader onNext={() => next()} onPrevious={() => prev()} />
+      ),
     },
     {
       title: "Additional Configuration",
-      content: (
-        <div className="container mx-auto px-4 py-8 max-w-lg">
-          <h1 className="text-2xl font-semibold text-center mb-8">
-            Additional Configuration
-          </h1>
-          <Checkbox.Group style={{ width: "100%" }}>
-            <div className="mb-4">
-              <Checkbox value="option1">Option 1</Checkbox>
-            </div>
-            <div className="mb-4">
-              <Checkbox value="option2">Option 2</Checkbox>
-            </div>
-            <div className="mb-4">
-              <Checkbox value="option3">Option 3</Checkbox>
-            </div>
-          </Checkbox.Group>
-          <Button
-            type="primary"
-            onClick={handleSubmit}
-            size="large"
-            className="w-full mt-6"
-          >
-            Submit
-          </Button>
-        </div>
-      ),
+      content: <SelectTables />,
     },
   ];
 
   const next = () => {
-    setCurrent(current + 1);
+    // Update the query parameter to the next step
+    // if (current === 0) {
+    //   // Perform step 0 specific logic
+    //   console.log("Step 0 specific logic");
+    // } else if (current === 1) {
+    //   // Perform step 1 specific logic
+    //   console.log("Step 1 specific logic");
+    // } else if (current === 2) {
+    //   // Perform step 2 specific logic
+    //   console.log("Step 2 specific logic");
+    // }
+    router.push(`?step=${current + 1}`);
   };
 
   const prev = () => {
-    setCurrent(current - 1);
+    // Update the query parameter to the previous step
+    router.push(`?step=${current - 1}`);
+  };
+
+  const handleSubmit = () => {
+    // Handle form submission for the last step
+    // For example, you can submit the entire form here
+    console.log("Form submitted");
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Steps size="small" current={current} className="mb-8">
+      <Steps size="small" current={current}>
         {steps.map((item) => (
           <Steps.Step key={item.title} title={item.title} />
         ))}
       </Steps>
-      <div>{steps[current].content}</div>
-      <div className="flex justify-end mb-4">
-        <Button onClick={prev} disabled={current === 0}>
-          Previous
-        </Button>
-        <Button
-          type="primary"
-          onClick={next}
-          disabled={current === steps.length - 1}
-          className="ml-2"
-        >
-          Next
-        </Button>
+      <div className="flex justify-center items-center">
+        {steps[current].content}
       </div>
+      {/* <div className="flex justify-end mb-4">
+        {current > 0 && (
+          <Button onClick={prev} className="mr-2">
+            Previous
+          </Button>
+        )}
+        {current < steps.length - 1 ? (
+          current !== 0 && (
+            <Button type="primary" onClick={next}>
+              Next
+            </Button>
+          )
+        ) : (
+          <Button type="primary" onClick={handleSubmit}>
+            Finish
+          </Button>
+        )}
+      </div> */}
     </div>
   );
 };
