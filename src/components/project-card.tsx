@@ -2,8 +2,10 @@ import React from "react";
 import { Dropdown, Menu } from "antd";
 import { MoreOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface ProjectCardProps {
+  id: string;
   title: string;
   description: string;
   imageUrl: string | null;
@@ -13,6 +15,7 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
+  id,
   title,
   description,
   imageUrl,
@@ -20,6 +23,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   onDelete,
   onEdit,
 }) => {
+  const router = useRouter();
+
   const menu = (
     <Menu>
       <Menu.Item key="1" icon={<EditOutlined />} onClick={onEdit}>
@@ -34,7 +39,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const fallbackImage = "/assets/images/fallback-image.jpeg"; // Path to your fallback image
 
   return (
-    <div className="bg-white px-6 py-6 rounded border h-[12.5rem] flex flex-col justify-between relative">
+    <div
+      className="bg-white px-6 py-6 rounded border h-[12.5rem] flex flex-col justify-between relative"
+      onClick={() => router.push(`/configure-project/${id}`)}
+    >
       <Dropdown
         overlay={menu}
         trigger={["click"]}

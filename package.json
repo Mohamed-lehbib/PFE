@@ -19,6 +19,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.51.5",
     "react-loading-overlay-ts": "^2.0.2",
+    "ts-morph": "^22.0.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

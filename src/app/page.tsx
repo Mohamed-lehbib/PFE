@@ -111,6 +111,7 @@ const App: React.FC = () => {
 
   return (
     <Layout>
+      {/* Header navbar */}
       <Header
         style={{
           position: "sticky",
@@ -126,6 +127,7 @@ const App: React.FC = () => {
       >
         <Navbar />
       </Header>
+      {/* Main content */}
       <Content className="p-4 px-6 md:px-12 bg-white">
         <div className="flex justify-end my-4">
           <Button
@@ -141,6 +143,7 @@ const App: React.FC = () => {
             {projects.map((project) => (
               <ProjectCard
                 key={project.project_id}
+                id={project.project_id}
                 title={project.project_name}
                 description={project.project_description}
                 imageUrl={project.project_logo}
