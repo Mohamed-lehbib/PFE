@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Button, Steps } from "antd";
+import { Steps } from "antd";
 import SupabaseCredentialsPage from "@/components/supabase-credentials-page";
 import TsFileUploader from "@/components/ts-file-uploader";
 import SelectTables from "@/components/select-tables";
@@ -32,22 +32,11 @@ const ConfigureProject = () => {
     },
     {
       title: "Additional Configuration",
-      content: <SelectTables />,
+      content: <SelectTables onNext={() => next()} onPrevious={() => prev()} />,
     },
   ];
 
   const next = () => {
-    // Update the query parameter to the next step
-    // if (current === 0) {
-    //   // Perform step 0 specific logic
-    //   console.log("Step 0 specific logic");
-    // } else if (current === 1) {
-    //   // Perform step 1 specific logic
-    //   console.log("Step 1 specific logic");
-    // } else if (current === 2) {
-    //   // Perform step 2 specific logic
-    //   console.log("Step 2 specific logic");
-    // }
     router.push(`?step=${current + 1}`);
   };
 
