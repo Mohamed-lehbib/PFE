@@ -1,5 +1,5 @@
 import { Button, Form, Input, message, Spin } from "antd";
-import { useForm, FormInstance } from "antd/es/form/Form";
+import { useForm } from "antd/es/form/Form";
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
 

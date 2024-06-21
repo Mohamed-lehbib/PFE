@@ -52,15 +52,15 @@ const TsFileUploader = ({ onNext, onPrevious }: Props) => {
           message.success("File uploaded successfully!");
           onNext(); // Move onNext inside onload to ensure parsing is complete before proceeding
         } else {
+          let errorMessage = "Failed to upload file. Please try again.";
           if (
             typeof response.error === "object" &&
             response.error !== null &&
             "message" in response.error
           ) {
-            message.error(`Failed to upload file: ${response.error.message}`);
-          } else {
-            message.error("Failed to upload file. Please try again.");
+            errorMessage = `Failed to upload file: ${response.error.message}`;
           }
+          message.error(errorMessage);
         }
       } catch (error) {
         console.error("Error in handleSubmit:", error);
