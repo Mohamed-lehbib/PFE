@@ -7,7 +7,7 @@ interface Props {
   onNext: () => void;
 }
 
-export default function SupabaseCredentialsPage({ onNext }: Props) {
+export default function SupabaseCredentialsPage({ onNext }: Readonly<Props>) {
   const [form] = useForm();
   const [url, setUrl] = useState("");
   const [key, setKey] = useState("");
@@ -73,7 +73,7 @@ export default function SupabaseCredentialsPage({ onNext }: Props) {
             Supabase Configuration
           </h1>
           <Form
-            form={form as FormInstance<any>}
+            form={form}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
             autoComplete="off"

@@ -1,5 +1,5 @@
 // utils/tableParser.ts
-import { Project, PropertySignature, TypeLiteralNode, UnionTypeNode } from "ts-morph";
+import { Project, PropertySignature, TypeLiteralNode } from "ts-morph";
 
 // Structure to store attributes, including potential enum values
 export interface AttributeWithEnum {
@@ -26,10 +26,10 @@ export const parseSupabaseTablesWithAttributes = (tsFileContent: string): TableA
   const databaseType = sourceFile.getTypeAliasOrThrow("Database");
   const databaseNode = databaseType.getTypeNodeOrThrow() as TypeLiteralNode;
 
-  const publicProp = databaseNode.getPropertyOrThrow("public") as PropertySignature;
+  const publicProp = databaseNode.getPropertyOrThrow("public");
   const publicTypeNode = publicProp.getTypeNodeOrThrow() as TypeLiteralNode;
 
-  const tablesProp = publicTypeNode.getPropertyOrThrow("Tables") as PropertySignature;
+  const tablesProp = publicTypeNode.getPropertyOrThrow("Tables");
   const tablesTypeNode = tablesProp.getTypeNodeOrThrow() as TypeLiteralNode;
 
   const tablesWithAttributes: TableAttributes[] = tablesTypeNode
@@ -38,7 +38,7 @@ export const parseSupabaseTablesWithAttributes = (tsFileContent: string): TableA
     .map((member) => {
       const tableName = (member as PropertySignature).getName();
       const memberType = (member as PropertySignature).getTypeNodeOrThrow() as TypeLiteralNode;
-      const rowProp = memberType.getPropertyOrThrow("Row") as PropertySignature;
+      const rowProp = memberType.getPropertyOrThrow("Row") ;
       const rowTypeNode = rowProp.getTypeNodeOrThrow() as TypeLiteralNode;
 
       const attributes = rowTypeNode

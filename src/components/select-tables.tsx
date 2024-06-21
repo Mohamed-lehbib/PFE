@@ -22,10 +22,10 @@ interface TableData {
 export default function SelectTables({
   onNext,
   onPrevious,
-}: {
+}: Readonly<{
   onNext: () => void;
   onPrevious: () => void;
-}) {
+}>) {
   const [tables, setTables] = useState<TableData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const params = useParams<{ id: string }>();
@@ -64,27 +64,27 @@ export default function SelectTables({
     field: keyof TableData,
     value: boolean
   ) => {
-    setTables((prevTables) =>
-      prevTables.map((table) => {
-        if (table.id === id) {
-          if (field === "all") {
-            return {
-              ...table,
-              all: value,
-              create: value,
-              read: value,
-              update: value,
-              delete: value,
-            };
-          }
-          const allChecked = ["create", "read", "update", "delete"].every(
-            (key) => key === field || table[key as keyof TableData]
-          );
-          return { ...table, [field]: value, all: allChecked };
+    const updatedTables = tables.map((table) => {
+      if (table.id === id) {
+        if (field === "all") {
+          return {
+            ...table,
+            all: value,
+            create: value,
+            read: value,
+            update: value,
+            delete: value,
+          };
         }
-        return table;
-      })
-    );
+        const allChecked = ["create", "read", "update", "delete"].every(
+          (key) => key === field || table[key as keyof TableData]
+        );
+        return { ...table, [field]: value, all: allChecked };
+      }
+      return table;
+    });
+
+    setTables(updatedTables);
   };
 
   const handleSubmit = async () => {
@@ -99,17 +99,16 @@ export default function SelectTables({
 
       return {
         id: table.id,
-        status: table.read ? table.status : "HIDDEN",
+        status: table.read ? "SHOWN" : "HIDDEN",
         actions,
       };
     });
-
+    console.log("updateTable", updatedTables);
     const response = await updateTableStatusActions(updatedTables);
 
     if (response.status === 200) {
       message.success("Tables updated successfully");
       setLoading(false);
-      // onNext();
     } else {
       message.error("Failed to update tables");
       console.error("Failed to update tables:", response.error);

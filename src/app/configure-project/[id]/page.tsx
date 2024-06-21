@@ -45,12 +45,6 @@ const ConfigureProject = () => {
     router.push(`?step=${current - 1}`);
   };
 
-  const handleSubmit = () => {
-    // Handle form submission for the last step
-    // For example, you can submit the entire form here
-    console.log("Form submitted");
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       <Steps size="small" current={current}>
