@@ -5,18 +5,19 @@ interface Table {
   name: string;
   project_id: string;
   attributes: AttributeWithEnum[];
+  status: string;
 }
 
-export async function insertTable(table: Table) {
+export async function insertTables(tables: Table[]) {
   try {
     const supabase = createClient();
-    const { data, error, status } = await supabase.from("tables").insert([
-      {
-        project_id: table.project_id,
-        name: table.name,
-        attributes: table.attributes,
-      },
-    ]);
+    const insertData = tables.map((table) => ({
+      project_id: table.project_id,
+      name: table.name,
+      attributes: table.attributes,
+      status: table.status
+    }));
+    const { data, error, status } = await supabase.from("tables").insert(insertData);
 
     if (error) {
       return { status, error };
