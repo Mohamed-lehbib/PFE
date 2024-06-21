@@ -12,7 +12,7 @@ const ConfigureProject = () => {
 
   // Parse the current step from the query parameters
   const params = useSearchParams();
-  const currentStep = parseInt(params.get("step") || "0", 10);
+  const currentStep = parseInt(params.get("step") ?? "0", 10);
 
   // Set the current step based on the query parameters
   if (!isNaN(currentStep) && currentStep !== current) {
