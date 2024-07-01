@@ -1,5 +1,5 @@
 import React from "react";
-import { Dropdown, Menu, Card, Avatar, Skeleton } from "antd";
+import { Dropdown, Menu, Card, Avatar } from "antd";
 import { MoreOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import type { MenuProps } from "antd";
@@ -14,7 +14,6 @@ interface ProjectCardProps {
   owner: string;
   onDelete: () => void;
   onEdit: () => void;
-  loading: boolean; // Add a loading prop to handle the loading state
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -25,7 +24,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   owner,
   onDelete,
   onEdit,
-  loading, // Use the loading prop
 }) => {
   const router = useRouter();
 
@@ -55,19 +53,26 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const fallbackImage = "/assets/images/fallback-image.jpeg"; // Path to your fallback image
 
   return (
-    <Card style={{ width: "100%", marginTop: 16 }} onClick={handleCardClick}>
-      <Skeleton loading={loading} avatar active>
-        <Meta
-          avatar={<Avatar src={imageUrl || fallbackImage} />}
-          title={title}
-          description={
-            <>
-              <p>{description}</p>
-              <p>Owner: {owner}</p>
-            </>
-          }
-        />
-      </Skeleton>
+    <Card
+      className="project-card"
+      style={{
+        width: "100%",
+        marginTop: 16,
+        height: 150, // Adjust height as needed
+        transition: "transform 0.3s, background-color 0.3s", // Transition for hover effects
+      }}
+      onClick={handleCardClick}
+    >
+      <Meta
+        avatar={<Avatar src={imageUrl || fallbackImage} size={64} />}
+        title={title}
+        description={
+          <>
+            <p className="line-clamp-2">{description}</p>
+            <p>Owner: {owner}</p>
+          </>
+        }
+      />
       <Dropdown
         overlay={menu}
         trigger={["click"]}

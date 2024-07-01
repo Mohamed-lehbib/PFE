@@ -143,7 +143,7 @@ const App: React.FC = () => {
           {loading ? (
             <>
               {[...Array(9)].map((_, index) => (
-                <ProjectCardSkeleton key={index} />
+                <ProjectCardSkeleton key={`skeleton-${index}`} />
               ))}
             </>
           ) : (
@@ -160,7 +160,6 @@ const App: React.FC = () => {
                   setDeleteModalVisible(true);
                 }}
                 onEdit={() => handleEdit(project)}
-                loading={loading}
               />
             ))
           )}

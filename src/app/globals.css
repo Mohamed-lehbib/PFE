@@ -12,3 +12,13 @@
   min-width: 200px; /* Minimum width of the message box */
   max-width: 90%; /* Maximum width to maintain reasonable sizing */
 }
+
+.project-card {
+  cursor: pointer;
+  background-color: white; /* Default background color */
+}
+
+.project-card:hover {
+  transform: scale(1.05); /* Scale the card on hover */
+  background-color: #f0f0f0; /* Grayish background on hover */
+}

@@ -113,13 +113,12 @@ const ProjectUploader: React.FC<{
           <label htmlFor="description" className="block mb-2">
             Description
           </label>
-          <input
-            type="text"
+          <textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Enter project description"
-            className="w-full px-3 py-2 border rounded"
+            className="w-full px-3 py-2 border rounded h-24"
           />
         </div>
         <button
