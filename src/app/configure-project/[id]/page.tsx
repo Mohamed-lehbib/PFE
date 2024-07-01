@@ -5,6 +5,7 @@ import SupabaseCredentialsPage from "@/components/supabase-credentials/supabase-
 import TsFileUploader from "@/components/ts-file-uploader/ts-file-uploader";
 import SelectTables from "@/components/select-tables/select-tables";
 import { useRouter, useSearchParams } from "next/navigation";
+import SelectAttributes from "@/components/select-attributes/select-attributes";
 
 const ConfigureProject = () => {
   const router = useRouter();
@@ -31,8 +32,12 @@ const ConfigureProject = () => {
       ),
     },
     {
-      title: "Additional Configuration",
+      title: "Configure tables",
       content: <SelectTables onNext={() => next()} onPrevious={() => prev()} />,
+    },
+    {
+      title: "configure attributes",
+      content: <SelectAttributes />,
     },
   ];
 

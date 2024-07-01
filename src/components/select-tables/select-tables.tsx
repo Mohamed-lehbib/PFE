@@ -104,11 +104,12 @@ export default function SelectTables({
       };
     });
     console.log("updateTable", updatedTables);
-    const response = await updateTableStatusActions(updatedTables);
+    const response = await updateTableStatusActions(params.id, updatedTables);
 
     if (response.status === 200) {
       message.success("Tables updated successfully");
       setLoading(false);
+      onNext();
     } else {
       message.error("Failed to update tables");
       console.error("Failed to update tables:", response.error);

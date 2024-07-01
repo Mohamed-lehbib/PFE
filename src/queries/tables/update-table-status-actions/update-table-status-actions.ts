@@ -6,7 +6,7 @@ interface TableStatusActions {
   actions: string[];
 }
 
-export async function updateTableStatusActions(tableStatusActions: TableStatusActions[]) {
+export async function updateTableStatusActions(project_id: string, tableStatusActions: TableStatusActions[]) {
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,6 +32,17 @@ export async function updateTableStatusActions(tableStatusActions: TableStatusAc
 
     if (errors.length > 0) {
       return { status: 400, error: errors.join(', ') };
+    }
+
+    // Update project progress using the project_id from the first table
+    const { error: errorProjectProgress } = await supabase
+      .from("project")
+      .update({ progress: 3 })
+      .eq("id", project_id);
+
+    if (errorProjectProgress) {
+      console.error("Error updating project progress:", errorProjectProgress);
+      return { status: 500, error: errorProjectProgress.message };
     }
 
     return { status: 200, tables: updatedTables };

@@ -32,6 +32,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const handleCardClick = () => {
     if (!parseInt(progress)) {
       router.push(`/configure-project/${id}`);
+    } else if (parseInt(progress) === 10) {
+      router.push(`/project/${id}`);
     } else {
       router.push(`/configure-project/${id}?step=${progress}`);
     }
