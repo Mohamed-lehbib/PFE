@@ -88,7 +88,7 @@ async function handleResetPassword(supabase: any, email: string) {
     }
 
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `http://localhost:3000/update-password?email=${email}`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_DOMAIN}/update-password?email=${email}`,
     });
 
     if (error) {

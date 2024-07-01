@@ -199,7 +199,7 @@ const Auth = () => {
               type="primary"
               htmlType="submit"
               loading={loading}
-              className="w-full"
+              className="w-full h-[2.2rem]"
             >
               {getTitle(mode)}
             </Button>
