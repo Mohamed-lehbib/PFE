@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Layout, message as messageApi, theme } from "antd";
+import { nanoid } from "nanoid";
 import ProjectCard from "@/components/project-card/project-card";
 import CreateProjectModal from "@/components/modals/create-project-modal";
 import DeleteProjectModal from "@/components/modals/delete-project-modal";
@@ -143,7 +144,7 @@ const App: React.FC = () => {
           {loading ? (
             <>
               {[...Array(9)].map((_, index) => (
-                <ProjectCardSkeleton key={`skeleton-${index}`} />
+                <ProjectCardSkeleton key={nanoid()} />
               ))}
             </>
           ) : (
