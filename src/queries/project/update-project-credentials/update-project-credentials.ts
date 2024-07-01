@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
+import { progress } from "framer-motion";
 
 interface ProjectCredentials {
   id: string;
@@ -13,7 +14,8 @@ export async function updateProjectCredentials(projectCredentials: ProjectCreden
       .from("project")
       .update({
         supabase_url: projectCredentials.supabase_url,
-        supabase_service_role_key: projectCredentials.supabase_service_role_key 
+        supabase_service_role_key: projectCredentials.supabase_service_role_key,
+        progress: "1"
       })
       .eq("id", projectCredentials.id);
 

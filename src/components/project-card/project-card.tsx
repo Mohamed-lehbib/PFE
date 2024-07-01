@@ -1,5 +1,5 @@
 import React from "react";
-import { Dropdown, Menu, Card, Avatar } from "antd";
+import { Dropdown, Menu, Card, Avatar, Progress } from "antd";
 import { MoreOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import type { MenuProps } from "antd";
@@ -12,6 +12,7 @@ interface ProjectCardProps {
   description: string;
   imageUrl: string | null;
   owner: string;
+  progress: string;
   onDelete: () => void;
   onEdit: () => void;
 }
@@ -20,6 +21,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   id,
   title,
   description,
+  progress,
   imageUrl,
   owner,
   onDelete,
@@ -28,7 +30,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const router = useRouter();
 
   const handleCardClick = () => {
-    router.push(`/configure-project/${id}`);
+    if (!parseInt(progress)) {
+      router.push(`/configure-project/${id}`);
+    } else {
+      router.push(`/configure-project/${id}?step=${progress}`);
+    }
   };
 
   const handleMenuClick: MenuProps["onClick"] = (e) => {
@@ -52,6 +58,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
   const fallbackImage = "/assets/images/fallback-image.jpeg"; // Path to your fallback image
 
+  // Calculate progress percentage based on the given progress value
+  const calculateProgressPercentage = (progress: number) => {
+    switch (progress) {
+      case 1:
+        return 25;
+      case 2:
+        return 50;
+      case 3:
+        return 75;
+      case 10:
+        return 100;
+      default:
+        return 0;
+    }
+  };
+
   return (
     <Card
       className="project-card"
@@ -70,6 +92,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <>
             <p className="line-clamp-2">{description}</p>
             <p>Owner: {owner}</p>
+            <Progress
+              percent={calculateProgressPercentage(parseInt(progress))}
+            />
           </>
         }
       />

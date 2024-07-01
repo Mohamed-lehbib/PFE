@@ -16,6 +16,7 @@ interface Project {
   project_name: string;
   project_description: string;
   project_id: string;
+  project_progress: string;
 }
 
 const { Header, Content } = Layout;
@@ -154,6 +155,7 @@ const App: React.FC = () => {
                 id={project.project_id}
                 title={project.project_name}
                 description={project.project_description}
+                progress={project.project_progress}
                 imageUrl={project.project_logo}
                 owner={project.user_email}
                 onDelete={() => {
