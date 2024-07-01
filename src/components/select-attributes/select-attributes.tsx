@@ -16,50 +16,64 @@ interface TableData {
 interface AttributeData {
   name: string;
   type: string;
+  metaType?: string;
   read: boolean;
   create: boolean;
   update: boolean;
   enumValues?: string[];
 }
 
+function mapAttributes(attributes: any[]): AttributeData[] {
+  return attributes.map((attr) => ({
+    ...attr,
+    read: false,
+    create: false,
+    update: false,
+    type: attr.type || "string",
+  }));
+}
+
+function filterAndMapTables(tables: TableData[]): TableData[] {
+  return tables
+    .filter((table) => table.status === "SHOWN")
+    .map((table) => ({
+      ...table,
+      attributes: mapAttributes(table.attributes),
+    }));
+}
+
+async function fetchTables(
+  id: string,
+  setLoading: (loading: boolean) => void,
+  setTables: (tables: TableData[]) => void
+) {
+  setLoading(true);
+  try {
+    const response = await getTablesByProjectId(id);
+    if (response.status === 200 && response.tables) {
+      const filteredTables = filterAndMapTables(response.tables);
+      setTables(filteredTables);
+    } else {
+      console.error("Failed to fetch tables:", response.error);
+    }
+  } catch (error) {
+    console.error("Error fetching tables:", error);
+  } finally {
+    setLoading(false);
+  }
+}
+
 export default function SelectAttributes() {
   const [tables, setTables] = useState<TableData[]>([]);
   const [currentTableIndex, setCurrentTableIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const fetchTables = async () => {
-      setLoading(true);
-      try {
-        const response = await getTablesByProjectId(params.id);
-        if (response.status === 200 && response.tables) {
-          const filteredTables = response.tables
-            .filter((table: TableData) => table.status === "SHOWN")
-            .map((table: TableData) => ({
-              ...table,
-              attributes: table.attributes.map((attr) => ({
-                ...attr,
-                read: false,
-                create: false,
-                update: false,
-                type: attr.type || "string",
-              })),
-            }));
-          setTables(filteredTables);
-        } else {
-          console.error("Failed to fetch tables:", response.error);
-        }
-      } catch (error) {
-        console.error("Error fetching tables:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTables();
+    fetchTables(params.id, setLoading, setTables);
   }, [params.id]);
 
   useEffect(() => {
@@ -68,14 +82,15 @@ export default function SelectAttributes() {
       const updatedSearchParams = new URLSearchParams(searchParams);
       updatedSearchParams.set("table_id", tableId);
       router.replace(`?${updatedSearchParams.toString()}`);
+      setProgress(
+        parseFloat(((currentTableIndex / tables.length) * 100).toFixed(2))
+      );
     }
   }, [tables, currentTableIndex, searchParams, router]);
 
   const handleSaveAndNext = async () => {
     setLoading(true);
-
     const currentTable = tables[currentTableIndex];
-
     const result = await updateTableAttributes(params.id, {
       id: currentTable.id,
       attributes: currentTable.attributes,
@@ -88,12 +103,12 @@ export default function SelectAttributes() {
         setCurrentTableIndex(currentTableIndex + 1);
       } else {
         message.success("All tables configured successfully");
-        // Add your logic here to handle the completion of all tables configuration
         const supabase = createClient();
         await supabase
           .from("project")
           .update({ progress: 10 })
           .eq("id", params.id);
+        setProgress(100);
         router.push(`/project/${params.id}`);
       }
     } else {
@@ -116,9 +131,9 @@ export default function SelectAttributes() {
     });
   };
 
-  const handleTypeChange = (attributeName: string, value: string) => {
+  const handleMetaTypeChange = (attributeName: string, value: string) => {
     const updatedAttributes = currentTable.attributes.map((attr) =>
-      attr.name === attributeName ? { ...attr, type: value } : attr
+      attr.name === attributeName ? { ...attr, metaType: value } : attr
     );
     setTables((prevTables) => {
       const newTables = [...prevTables];
@@ -138,18 +153,24 @@ export default function SelectAttributes() {
       title: "Type",
       dataIndex: "type",
       key: "type",
-      render: (type: string, record: AttributeData) => (
-        <Select
-          value={type}
-          onChange={(value) => handleTypeChange(record.name, value)}
-        >
-          <Select.Option value="string">String</Select.Option>
-          <Select.Option value="number">Number</Select.Option>
-          <Select.Option value="image">Image</Select.Option>
-          <Select.Option value="file">File</Select.Option>
-          <Select.Option value="dropdown">Dropdown</Select.Option>
-        </Select>
-      ),
+    },
+    {
+      title: "Meta Type",
+      dataIndex: "metaType",
+      key: "metaType",
+      render: (metaType: string, record: AttributeData) =>
+        record.type === "text" || record.type === "string" ? (
+          <Select
+            value={metaType}
+            onChange={(value) => handleMetaTypeChange(record.name, value)}
+            style={{ minWidth: "100px" }}
+          >
+            <Select.Option value="text">Text</Select.Option>
+            <Select.Option value="textarea">Text Area</Select.Option>
+            <Select.Option value="file">File</Select.Option>
+            <Select.Option value="image">Image</Select.Option>
+          </Select>
+        ) : null,
     },
     {
       title: "Read",
@@ -195,7 +216,7 @@ export default function SelectAttributes() {
   return (
     <Spin spinning={loading}>
       <div className="flex flex-col w-screen">
-        <div className="container mx-auto px-4 py-8 max-w-lg">
+        <div className="container mx-auto px-4 py-8 max-w-2xl">
           <h1 className="text-2xl font-semibold text-center mb-8">
             Attribute Selection for Table: {currentTable?.name}
           </h1>
@@ -205,6 +226,7 @@ export default function SelectAttributes() {
               dataSource={currentTable.attributes}
               rowKey="name"
               pagination={false}
+              scroll={{ x: "max-content" }}
             />
           )}
           <div className="flex justify-end mt-4">
@@ -214,12 +236,9 @@ export default function SelectAttributes() {
           </div>
           <div className="mt-4">
             <Progress
-              percent={Number(
-                (((currentTableIndex + 1) / tables.length) * 100).toFixed(2)
-              )}
-              status="active"
+              percent={progress}
+              status={progress === 100 ? "success" : "active"}
             />
-
             <p>
               Configured {currentTableIndex + 1} of {tables.length} tables
             </p>
