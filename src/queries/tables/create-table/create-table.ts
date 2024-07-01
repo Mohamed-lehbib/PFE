@@ -30,7 +30,7 @@ export async function insertTables(tables: Table[]) {
 
     // Update project progress using the project_id from the first table
     const project_id = tables[0].project_id;
-    const { data: updateProjectProgress, error: errorProjectProgress } = await supabase
+    const { error: errorProjectProgress } = await supabase
       .from("project")
       .update({ progress: 2 })
       .eq("id", project_id);
