@@ -80,7 +80,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       style={{
         width: "100%",
         marginTop: 16,
-        height: 150, // Adjust height as needed
+        height: 175, // Adjust height as needed
         transition: "transform 0.3s, background-color 0.3s", // Transition for hover effects
       }}
       onClick={handleCardClick}
