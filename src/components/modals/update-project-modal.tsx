@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction } from "react";
 import { Modal } from "antd";
-import ProjectEditor from "../update-project-form";
+import ProjectEditor from "../update-project-form/update-project-form";
 
 interface UpdateProjectModalProps {
   editModalVisible: boolean;

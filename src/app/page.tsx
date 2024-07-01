@@ -1,12 +1,22 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { PlusOutlined } from "@ant-design/icons";
-import { Button, Layout, message as messageApi, Spin, theme } from "antd";
-import ProjectCard from "@/components/project-card";
+import {
+  Avatar,
+  Button,
+  Card,
+  Layout,
+  message as messageApi,
+  Skeleton,
+  theme,
+} from "antd";
+import ProjectCard from "@/components/project-card/project-card";
 import CreateProjectModal from "@/components/modals/create-project-modal";
 import DeleteProjectModal from "@/components/modals/delete-project-modal";
 import UpdateProjectModal from "@/components/modals/update-project-modal";
 import Navbar from "@/components/navbar/navbar";
+import Meta from "antd/es/card/Meta";
+import ProjectCardSkeleton from "@/components/project-card/project-card-skeleton";
 
 interface Project {
   user_email: string;
@@ -138,9 +148,15 @@ const App: React.FC = () => {
             Create new project
           </Button>
         </div>
-        <Spin spinning={loading}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-8">
-            {projects.map((project) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-8">
+          {loading ? (
+            <>
+              {[...Array(9)].map((_, index) => (
+                <ProjectCardSkeleton />
+              ))}
+            </>
+          ) : (
+            projects.map((project) => (
               <ProjectCard
                 key={project.project_id}
                 id={project.project_id}
@@ -153,10 +169,11 @@ const App: React.FC = () => {
                   setDeleteModalVisible(true);
                 }}
                 onEdit={() => handleEdit(project)}
+                loading={loading}
               />
-            ))}
-          </div>
-        </Spin>
+            ))
+          )}
+        </div>
         {/* The create project Modal */}
         <CreateProjectModal
           isModalVisible={isModalVisible}

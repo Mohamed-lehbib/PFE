@@ -3,7 +3,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import TypingText from "@/components/typing-text";
+import TypingText from "@/components/typing-text/typing-text";
 import { message as messageApi, Button } from "antd";
 
 interface FormData {

@@ -1,6 +1,6 @@
 import { Modal, Spin } from "antd";
 import React from "react";
-import ProjectUploader from "../create-project-form";
+import ProjectUploader from "../create-project-form/create-project-form";
 
 interface CreateProjectModalProps {
   isModalVisible: boolean;

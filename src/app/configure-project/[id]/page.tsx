@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import { Steps } from "antd";
-import SupabaseCredentialsPage from "@/components/supabase-credentials-page";
-import TsFileUploader from "@/components/ts-file-uploader";
-import SelectTables from "@/components/select-tables";
+import SupabaseCredentialsPage from "@/components/supabase-credentials/supabase-credentials-page";
+import TsFileUploader from "@/components/ts-file-uploader/ts-file-uploader";
+import SelectTables from "@/components/select-tables/select-tables";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const ConfigureProject = () => {
