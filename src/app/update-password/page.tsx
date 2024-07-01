@@ -28,7 +28,7 @@ const UpdatePassword = () => {
     setLoading(true);
     try {
       const supabase = createClient();
-      const { data: updatedData, error } = await supabase.auth.updateUser({
+      const { error } = await supabase.auth.updateUser({
         password: data.password,
       });
       if (error) {
