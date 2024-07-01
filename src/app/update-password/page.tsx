@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, message as messageApi } from "antd";
 import { createClient } from "@/utils/supabase/client";
@@ -55,13 +54,8 @@ const UpdatePassword = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="flex w-full h-screen">
-        <motion.div
-          initial={{ opacity: 0, x: 100 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-1/2 p-8 space-y-6 flex flex-col justify-center bg-white px-24"
-        >
+      <div className="flex flex-col md:flex-row w-full h-screen">
+        <div className="w-full md:w-1/2 p-8 space-y-6 flex flex-col justify-center bg-white md:px-24 h-full">
           <h2 className="text-3xl font-bold text-center">Update Password</h2>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
@@ -131,18 +125,13 @@ const UpdatePassword = () => {
               type="primary"
               htmlType="submit"
               loading={loading}
-              className="w-full h-[2.2rem]"
+              className="w-full h-[2.5rem]"
             >
               Update Password
             </Button>
           </form>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: -100 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-1/2 p-8 space-y-6 flex flex-col justify-center items-center bg-blue-600 text-white rounded-l-xl px-24"
-        >
+        </div>
+        <div className="hidden md:flex w-1/2 p-8 space-y-6 flex-col justify-center items-center bg-blue-600 text-white rounded-l-xl px-24">
           <h2 className="text-5xl font-extrabold text-center">
             Hello, Friend!
           </h2>
@@ -151,7 +140,7 @@ const UpdatePassword = () => {
             a few clicks away. Experience seamless and efficient dashboard
             creation like never before.
           </p>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
