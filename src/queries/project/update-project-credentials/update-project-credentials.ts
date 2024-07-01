@@ -1,5 +1,4 @@
 import { createClient } from "@/utils/supabase/client";
-import { progress } from "framer-motion";
 
 interface ProjectCredentials {
   id: string;
