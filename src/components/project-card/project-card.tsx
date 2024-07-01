@@ -1,12 +1,6 @@
 import React from "react";
 import { Dropdown, Menu, Card, Avatar, Skeleton } from "antd";
-import {
-  MoreOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  SettingOutlined,
-  EllipsisOutlined,
-} from "@ant-design/icons";
+import { MoreOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import type { MenuProps } from "antd";
 

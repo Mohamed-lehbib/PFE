@@ -1,21 +1,12 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { PlusOutlined } from "@ant-design/icons";
-import {
-  Avatar,
-  Button,
-  Card,
-  Layout,
-  message as messageApi,
-  Skeleton,
-  theme,
-} from "antd";
+import { Button, Layout, message as messageApi, theme } from "antd";
 import ProjectCard from "@/components/project-card/project-card";
 import CreateProjectModal from "@/components/modals/create-project-modal";
 import DeleteProjectModal from "@/components/modals/delete-project-modal";
 import UpdateProjectModal from "@/components/modals/update-project-modal";
 import Navbar from "@/components/navbar/navbar";
-import Meta from "antd/es/card/Meta";
 import ProjectCardSkeleton from "@/components/project-card/project-card-skeleton";
 
 interface Project {
@@ -152,7 +143,7 @@ const App: React.FC = () => {
           {loading ? (
             <>
               {[...Array(9)].map((_, index) => (
-                <ProjectCardSkeleton />
+                <ProjectCardSkeleton key={index} />
               ))}
             </>
           ) : (
