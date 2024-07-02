@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import { Layout, Select, Input, Skeleton } from "antd";
+import { Layout, Select, Skeleton } from "antd";
 import Sidebar from "@/components/sidebar/sidebar";
 import { createClient } from "@/utils/supabase/client";
 import ProjectHeader from "@/components/header/header";
@@ -43,7 +43,7 @@ export default function ProjectPage() {
         setAttributes(filteredAttributes);
         setFields(filteredAttributes.map((attr: any) => attr.name));
       }
-
+      console.log("attributes", attributes);
       setLoading(false);
     };
 
