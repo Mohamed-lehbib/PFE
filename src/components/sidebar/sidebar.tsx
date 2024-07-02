@@ -106,11 +106,12 @@ export default function Sidebar({
           <Image
             src={project.project_logo}
             alt="App Icon"
-            width={64}
-            height={64}
+            width={80} // Increase the size to 80px
+            height={80} // Increase the size to 80px
+            style={{ borderRadius: "50%" }} // Make the image rounded
           />
         ) : (
-          <Skeleton.Avatar active size={64} shape="circle" />
+          <Skeleton.Avatar active size={80} shape="circle" />
         )}
         {loading ? (
           <Skeleton.Input

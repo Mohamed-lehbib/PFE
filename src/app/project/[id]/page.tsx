@@ -1,13 +1,13 @@
 "use client";
 import { useParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import { Layout, Select, Skeleton } from "antd";
+import { Layout, Skeleton } from "antd";
 import Sidebar from "@/components/sidebar/sidebar";
 import { createClient } from "@/utils/supabase/client";
 import ProjectHeader from "@/components/header/header";
+import ProjectTable from "@/components/project-table/project-table";
 
 const { Content } = Layout;
-const { Option } = Select;
 
 export default function ProjectPage() {
   const params = useParams<{ id: string }>();
@@ -19,6 +19,9 @@ export default function ProjectPage() {
   const [fields, setFields] = useState<string[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [supabaseUrl, setSupabaseUrl] = useState<string>("");
+  const [supabaseServiceRoleKey, setSupabaseServiceRoleKey] =
+    useState<string>("");
 
   useEffect(() => {
     const fetchTableDetails = async () => {
@@ -43,7 +46,7 @@ export default function ProjectPage() {
         setAttributes(filteredAttributes);
         setFields(filteredAttributes.map((attr: any) => attr.name));
       }
-      console.log("attributes", attributes);
+
       setLoading(false);
     };
 
@@ -51,6 +54,28 @@ export default function ProjectPage() {
       fetchTableDetails();
     }
   }, [selectedTable]);
+
+  useEffect(() => {
+    const fetchProjectDetails = async () => {
+      const supabase = createClient();
+      const { data: projectData, error: projectError } = await supabase
+        .from("project")
+        .select("supabase_url, supabase_service_role_key")
+        .eq("id", projectId)
+        .single();
+
+      if (projectError) {
+        console.error("Error fetching project details:", projectError);
+      } else {
+        setSupabaseUrl(projectData.supabase_url);
+        setSupabaseServiceRoleKey(projectData.supabase_service_role_key);
+      }
+    };
+
+    if (projectId) {
+      fetchProjectDetails();
+    }
+  }, [projectId]);
 
   const handleSelectTable = (table: { id: number; name: string }) => {
     setSelectedTable(table);
@@ -69,7 +94,20 @@ export default function ProjectPage() {
           loading={loading}
         />
         <Content style={{ padding: "24px", background: "#fff" }}>
-          <div>{loading ? <Skeleton active /> : <>content</>}</div>
+          <div>
+            {loading ? (
+              <Skeleton active />
+            ) : (
+              selectedTable && (
+                <ProjectTable
+                  table={selectedTable}
+                  attributes={attributes}
+                  supabaseUrl={supabaseUrl}
+                  supabaseServiceRoleKey={supabaseServiceRoleKey}
+                />
+              )
+            )}
+          </div>
         </Content>
       </Layout>
     </Layout>
