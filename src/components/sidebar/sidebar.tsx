@@ -1,80 +1,130 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Menu } from "antd";
+import { Layout, Menu, Skeleton } from "antd";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 
 const { Sider } = Layout;
 
-interface SidebarProps {
-  collapsed: boolean;
-  onCollapse: () => void;
+interface TableIdName {
+  id: number;
+  name: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapse }) => {
-  const [tables, setTables] = useState<string[]>([]);
+interface Project {
+  name: string;
+  project_logo: string;
+}
+
+export default function Sidebar({
+  projectId,
+}: Readonly<{ projectId: string }>) {
+  const [tables, setTables] = useState<TableIdName[]>([]);
+  const [project, setProject] = useState<Project | undefined>();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTables = async () => {
+    const fetchTablesAndProject = async () => {
       const supabase = createClient();
-      const { data, error } = await supabase
-        .from("information_schema.tables")
-        .select("table_name");
-      if (error) {
-        console.error("Error fetching tables:", error);
-      } else {
-        setTables(data.map((table: any) => table.table_name));
-      }
-    };
-    fetchTables();
-  }, []);
+      const { data: tableData, error: tableError } = await supabase
+        .from("tables")
+        .select("id, name")
+        .eq("project_id", projectId)
+        .order("name", { ascending: false });
 
-  const menuItems = tables.map((table, index) => ({
-    key: String(index + 1),
-    label: table,
+      if (tableError) {
+        console.error("Error fetching tables:", tableError);
+      } else {
+        setTables(tableData);
+      }
+
+      const { data: projectData, error: projectError } = await supabase
+        .from("project")
+        .select("project_logo, name")
+        .eq("id", projectId)
+        .single();
+
+      if (projectError) {
+        console.error("Error fetching project:", projectError);
+      } else {
+        setProject(projectData);
+      }
+
+      setLoading(false);
+    };
+    fetchTablesAndProject();
+  }, [projectId]);
+
+  const menuItems = tables.map((table) => ({
+    key: String(table.id),
+    label: table.name,
   }));
 
   return (
     <Sider
       trigger={null}
-      collapsible
-      collapsed={collapsed}
-      breakpoint="lg"
-      collapsedWidth="0"
       style={{
         height: "100vh",
-        background: "#ffffff", // Set the background color to white or light color
-        paddingTop: "50px", // Add margin-top of 50 pixels
+        background: "#ffffff",
+        paddingTop: "50px",
+        borderRight: "1px solid #f0f0f0", // Light border right
+        display: "flex",
+        flexDirection: "column",
+        // alignItems: "center", // Center items within the width of the sidebar
       }}
     >
       <div
         style={{
           display: "flex",
+          flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
           padding: "16px",
-          background: "#ffffff", // Set the background color to white or light color
+          background: "#ffffff",
         }}
       >
-        <Image
-          src="/assets/images/icon.svg"
-          alt="App Icon"
-          width={64} // Increase the width to make the icon bigger
-          height={64} // Increase the height to make the icon bigger
-        />
+        {project ? (
+          <Image
+            src={project.project_logo}
+            alt="App Icon"
+            width={64}
+            height={64}
+          />
+        ) : (
+          <Skeleton.Avatar active size={64} shape="circle" />
+        )}
+        {loading ? (
+          <Skeleton.Input
+            active
+            style={{ width: 120, marginTop: 16, marginBottom: 16 }}
+          />
+        ) : (
+          <div style={{ marginTop: 16, marginBottom: 16 }}>{project?.name}</div>
+        )}
       </div>
-      <Menu
-        theme="light"
-        mode="inline"
-        defaultSelectedKeys={["1"]}
-        items={menuItems}
-        style={{
-          height: "calc(100% - 64px)",
-          borderRight: 0,
-          background: "#ffffff", // Set the background color to white or light color
-        }}
-      />
+      {loading ? (
+        <div
+          style={{
+            padding: "16px",
+            background: "#ffffff",
+            width: "100%",
+          }}
+        >
+          <Skeleton active paragraph={{ rows: 8 }} />
+        </div>
+      ) : (
+        <Menu
+          theme="light"
+          mode="inline"
+          defaultSelectedKeys={["1"]}
+          items={menuItems}
+          style={{
+            height: "calc(100% - 64px)",
+            borderRight: 0,
+            background: "#ffffff",
+            width: "100%",
+          }}
+        />
+      )}
     </Sider>
   );
-};
-
-export default Sidebar;
+}

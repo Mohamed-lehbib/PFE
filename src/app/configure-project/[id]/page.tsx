@@ -60,24 +60,6 @@ const ConfigureProject = () => {
       <div className="flex justify-center items-center">
         {steps[current].content}
       </div>
-      {/* <div className="flex justify-end mb-4">
-        {current > 0 && (
-          <Button onClick={prev} className="mr-2">
-            Previous
-          </Button>
-        )}
-        {current < steps.length - 1 ? (
-          current !== 0 && (
-            <Button type="primary" onClick={next}>
-              Next
-            </Button>
-          )
-        ) : (
-          <Button type="primary" onClick={handleSubmit}>
-            Finish
-          </Button>
-        )}
-      </div> */}
     </div>
   );
 };
