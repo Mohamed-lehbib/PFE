@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
-import { Layout, Skeleton, Button } from "antd";
+import React, { useState, useEffect, useCallback } from "react";
+import { Layout, Skeleton, Button, Spin } from "antd";
 import Sidebar from "@/components/sidebar/sidebar";
 import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 import ProjectHeader from "@/components/header/header";
@@ -161,6 +161,7 @@ export default function ProjectPage() {
                   supabaseServiceRoleKey={supabaseServiceRoleKey}
                   searchField={searchField}
                   searchValue={searchValue}
+                  onTableChange={() => setRefreshTable((prev) => prev + 1)}
                 />
               )
             )}

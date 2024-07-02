@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Skeleton, Button, Space, Modal } from "antd";
 import { createClient } from "@supabase/supabase-js";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import EditRecordModal from "@/components/edit-record-modal/edit-record-modal";
 
 interface ProjectTableProps {
   table: { id: number; name: string; actions: string[] };
@@ -10,6 +11,7 @@ interface ProjectTableProps {
   supabaseServiceRoleKey: string;
   searchField: string;
   searchValue: string;
+  onTableChange: () => void;
 }
 
 export default function ProjectTable({
@@ -19,11 +21,14 @@ export default function ProjectTable({
   supabaseServiceRoleKey,
   searchField,
   searchValue,
-}: Readonly<ProjectTableProps>) {
+  onTableChange,
+}: ProjectTableProps) {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<any>(null);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [recordToEdit, setRecordToEdit] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,11 +74,12 @@ export default function ProjectTable({
     supabaseServiceRoleKey,
     searchField,
     searchValue,
+    onTableChange,
   ]);
 
   const handleEdit = (record: any) => {
-    // Implement edit functionality
-    console.log("Edit record:", record);
+    setRecordToEdit(record);
+    setIsEditModalVisible(true);
   };
 
   const handleDelete = async () => {
@@ -88,6 +94,7 @@ export default function ProjectTable({
     } else {
       setData(data.filter((item) => item.id !== recordToDelete.id));
       setIsDeleteModalVisible(false);
+      onTableChange(); // Refresh the table after deleting
     }
   };
 
@@ -104,13 +111,13 @@ export default function ProjectTable({
       key: attr.name,
     }));
 
-  if (table.actions.includes("delete") || table.actions.includes("edit")) {
+  if (table.actions.includes("delete") || table.actions.includes("update")) {
     columns.push({
       title: "Action",
       key: "action",
       render: (_: any, record: any) => (
         <Space size="middle">
-          {table.actions.includes("edit") && (
+          {table.actions.includes("update") && (
             <Button
               type="link"
               icon={<EditOutlined />}
@@ -138,7 +145,7 @@ export default function ProjectTable({
       )}
       <Modal
         title="Confirm Deletion"
-        open={isDeleteModalVisible}
+        visible={isDeleteModalVisible}
         onOk={handleDelete}
         onCancel={() => setIsDeleteModalVisible(false)}
         okText="Yes"
@@ -146,6 +153,16 @@ export default function ProjectTable({
       >
         <p>Are you sure you want to delete the record?</p>
       </Modal>
+      <EditRecordModal
+        visible={isEditModalVisible}
+        onCancel={() => setIsEditModalVisible(false)}
+        record={recordToEdit}
+        table={table}
+        supabaseUrl={supabaseUrl}
+        supabaseServiceRoleKey={supabaseServiceRoleKey}
+        attributes={attributes.filter((attr) => attr.update)}
+        onEditSuccess={onTableChange}
+      />
     </>
   );
 }
