@@ -25,12 +25,15 @@ export default function ProjectTable({
   useEffect(() => {
     const fetchData = async () => {
       const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-      let query = supabase.from(table.name).select(
-        attributes
-          .filter((attr) => attr.read)
-          .map((attr) => attr.name)
-          .join(", ")
-      );
+      let query = supabase
+        .from(table.name)
+        .select(
+          attributes
+            .filter((attr) => attr.read)
+            .map((attr) => attr.name)
+            .join(", ")
+        )
+        .order("id", { ascending: false });
 
       if (searchField && searchValue) {
         const attribute = attributes.find((attr) => attr.name === searchField);

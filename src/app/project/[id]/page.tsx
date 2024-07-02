@@ -1,11 +1,13 @@
 "use client";
 import { useParams } from "next/navigation";
 import React, { useState, useEffect, useCallback } from "react";
-import { Layout, Skeleton } from "antd";
+import { Layout, Skeleton, Button, Spin } from "antd";
 import Sidebar from "@/components/sidebar/sidebar";
-import { createClient } from "@/utils/supabase/client";
+import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 import ProjectHeader from "@/components/header/header";
 import ProjectTable from "@/components/project-table/project-table";
+import CreateRecordModal from "@/components/create-record-modal/create-record-modal";
+import { createClient } from "@supabase/supabase-js";
 
 const { Content } = Layout;
 
@@ -24,12 +26,15 @@ export default function ProjectPage() {
     useState<string>("");
   const [searchField, setSearchField] = useState<string>("");
   const [searchValue, setSearchValue] = useState<string>("");
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [refreshTable, setRefreshTable] = useState<number>(0);
 
   useEffect(() => {
     const fetchTableDetails = async () => {
       if (!selectedTable) return;
 
-      const supabase = createClient();
+      const supabase = createSupabaseClient();
       const { data: tableData, error: tableError } = await supabase
         .from("tables")
         .select("*")
@@ -59,7 +64,7 @@ export default function ProjectPage() {
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
-      const supabase = createClient();
+      const supabase = createSupabaseClient();
       const { data: projectData, error: projectError } = await supabase
         .from("project")
         .select("supabase_url, supabase_service_role_key")
@@ -89,6 +94,31 @@ export default function ProjectPage() {
     setSearchValue(value);
   }, []);
 
+  const handleCreateButtonClick = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleModalCreate = async (values: any) => {
+    if (!selectedTable) return;
+    setIsSubmitting(true);
+
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+    const { error } = await supabase.from(selectedTable.name).insert(values);
+
+    if (error) {
+      console.error("Error creating record:", error);
+    } else {
+      setIsModalVisible(false);
+      setRefreshTable((prev) => prev + 1); // Increment refreshTable state to refresh the table data
+    }
+
+    setIsSubmitting(false);
+  };
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
       {projectId && (
@@ -102,12 +132,24 @@ export default function ProjectPage() {
           onSearch={handleSearch}
         />
         <Content style={{ padding: "24px", background: "#fff" }}>
+          <div className="mb-[24px] flex justify-end">
+            {selectedTable && (
+              <Button
+                type="primary"
+                onClick={handleCreateButtonClick}
+                style={{ paddingLeft: "20px", paddingRight: "20px" }}
+              >
+                Create {selectedTable.name}
+              </Button>
+            )}
+          </div>
           <div>
             {loading ? (
               <Skeleton active />
             ) : (
               selectedTable && (
                 <ProjectTable
+                  key={refreshTable} // Ensure the table refreshes when this key changes
                   table={selectedTable}
                   attributes={attributes}
                   supabaseUrl={supabaseUrl}
@@ -119,6 +161,13 @@ export default function ProjectPage() {
             )}
           </div>
         </Content>
+        <CreateRecordModal
+          visible={isModalVisible}
+          onCancel={handleModalCancel}
+          onCreate={handleModalCreate}
+          attributes={attributes.filter((attr) => attr.create)}
+          isSubmitting={isSubmitting}
+        />
       </Layout>
     </Layout>
   );
