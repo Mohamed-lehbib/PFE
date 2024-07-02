@@ -131,7 +131,7 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
 
   return (
     <Modal
-      visible={visible}
+      open={visible}
       title="Edit Record"
       onCancel={onCancel}
       footer={[

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Table, Skeleton, Button, Space, Modal } from "antd";
 import { createClient } from "@supabase/supabase-js";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -22,7 +22,7 @@ export default function ProjectTable({
   searchField,
   searchValue,
   onTableChange,
-}: ProjectTableProps) {
+}: Readonly<ProjectTableProps>) {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -145,7 +145,7 @@ export default function ProjectTable({
       )}
       <Modal
         title="Confirm Deletion"
-        visible={isDeleteModalVisible}
+        open={isDeleteModalVisible}
         onOk={handleDelete}
         onCancel={() => setIsDeleteModalVisible(false)}
         okText="Yes"
