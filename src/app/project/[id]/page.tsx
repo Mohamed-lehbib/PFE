@@ -17,6 +17,7 @@ export default function ProjectPage() {
   const [selectedTable, setSelectedTable] = useState<{
     id: number;
     name: string;
+    actions: string[];
   } | null>(null);
   const [fields, setFields] = useState<string[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
@@ -84,7 +85,11 @@ export default function ProjectPage() {
     }
   }, [projectId]);
 
-  const handleSelectTable = (table: { id: number; name: string }) => {
+  const handleSelectTable = (table: {
+    id: number;
+    name: string;
+    actions: string[];
+  }) => {
     setSelectedTable(table);
     setLoading(true); // Set loading true when a new table is selected
   };

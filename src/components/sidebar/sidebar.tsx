@@ -8,6 +8,7 @@ const { Sider } = Layout;
 interface TableIdName {
   id: number;
   name: string;
+  actions: string[];
 }
 
 interface Project {
@@ -17,7 +18,11 @@ interface Project {
 
 interface SidebarProps {
   projectId: string;
-  onSelectTable: (table: { id: number; name: string }) => void;
+  onSelectTable: (table: {
+    id: number;
+    name: string;
+    actions: string[];
+  }) => void;
 }
 
 export default function Sidebar({
@@ -33,7 +38,7 @@ export default function Sidebar({
       const supabase = createClient();
       const { data: tableData, error: tableError } = await supabase
         .from("tables")
-        .select("id, name")
+        .select("id, name, actions") // Include actions in the query
         .eq("project_id", projectId)
         .order("name", { ascending: true });
 
@@ -42,7 +47,11 @@ export default function Sidebar({
       } else {
         setTables(tableData);
         if (tableData.length > 0) {
-          onSelectTable({ id: tableData[0].id, name: tableData[0].name });
+          onSelectTable({
+            id: tableData[0].id,
+            name: tableData[0].name,
+            actions: tableData[0].actions,
+          });
         }
       }
 
@@ -66,7 +75,11 @@ export default function Sidebar({
   const handleMenuClick = (e: any) => {
     const selectedTable = tables.find((table) => table.id === parseInt(e.key));
     if (selectedTable) {
-      onSelectTable({ id: selectedTable.id, name: selectedTable.name });
+      onSelectTable({
+        id: selectedTable.id,
+        name: selectedTable.name,
+        actions: selectedTable.actions,
+      });
     }
   };
 
