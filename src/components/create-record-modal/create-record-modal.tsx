@@ -105,7 +105,7 @@ const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
 
   return (
     <Modal
-      visible={visible}
+      open={visible}
       title="Create New Record"
       onCancel={onCancel}
       footer={[

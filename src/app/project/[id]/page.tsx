@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import React, { useState, useEffect, useCallback } from "react";
-import { Layout, Skeleton, Button, Spin } from "antd";
+import { Layout, Skeleton, Button } from "antd";
 import Sidebar from "@/components/sidebar/sidebar";
 import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 import ProjectHeader from "@/components/header/header";
