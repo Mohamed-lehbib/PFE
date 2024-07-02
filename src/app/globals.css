@@ -22,3 +22,12 @@
   transform: scale(1.05); /* Scale the card on hover */
   background-color: #f0f0f0; /* Grayish background on hover */
 }
+
+.sidebar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+.sidebar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
