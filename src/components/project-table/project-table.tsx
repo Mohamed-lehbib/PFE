@@ -19,7 +19,7 @@ export default function ProjectTable({
   supabaseServiceRoleKey,
   searchField,
   searchValue,
-}: ProjectTableProps) {
+}: Readonly<ProjectTableProps>) {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -138,7 +138,7 @@ export default function ProjectTable({
       )}
       <Modal
         title="Confirm Deletion"
-        visible={isDeleteModalVisible}
+        open={isDeleteModalVisible}
         onOk={handleDelete}
         onCancel={() => setIsDeleteModalVisible(false)}
         okText="Yes"
