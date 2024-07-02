@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Layout, Skeleton } from "antd";
 import Sidebar from "@/components/sidebar/sidebar";
 import { createClient } from "@/utils/supabase/client";
@@ -22,6 +22,8 @@ export default function ProjectPage() {
   const [supabaseUrl, setSupabaseUrl] = useState<string>("");
   const [supabaseServiceRoleKey, setSupabaseServiceRoleKey] =
     useState<string>("");
+  const [searchField, setSearchField] = useState<string>("");
+  const [searchValue, setSearchValue] = useState<string>("");
 
   useEffect(() => {
     const fetchTableDetails = async () => {
@@ -82,6 +84,11 @@ export default function ProjectPage() {
     setLoading(true); // Set loading true when a new table is selected
   };
 
+  const handleSearch = useCallback((field: string, value: string) => {
+    setSearchField(field);
+    setSearchValue(value);
+  }, []);
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
       {projectId && (
@@ -92,6 +99,7 @@ export default function ProjectPage() {
           selectedTable={selectedTable ? selectedTable.name : ""}
           fields={fields}
           loading={loading}
+          onSearch={handleSearch}
         />
         <Content style={{ padding: "24px", background: "#fff" }}>
           <div>
@@ -104,6 +112,8 @@ export default function ProjectPage() {
                   attributes={attributes}
                   supabaseUrl={supabaseUrl}
                   supabaseServiceRoleKey={supabaseServiceRoleKey}
+                  searchField={searchField}
+                  searchValue={searchValue}
                 />
               )
             )}

@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Table, Skeleton } from "antd";
 import { createClient } from "@supabase/supabase-js";
 
-
 interface ProjectTableProps {
   table: { id: number; name: string };
   attributes: any[];
   supabaseUrl: string;
   supabaseServiceRoleKey: string;
+  searchField: string;
+  searchValue: string;
 }
 
 export default function ProjectTable({
@@ -15,6 +16,8 @@ export default function ProjectTable({
   attributes,
   supabaseUrl,
   supabaseServiceRoleKey,
+  searchField,
+  searchValue,
 }: ProjectTableProps) {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,12 +25,26 @@ export default function ProjectTable({
   useEffect(() => {
     const fetchData = async () => {
       const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-      const { data: tableData, error } = await supabase.from(table.name).select(
+      let query = supabase.from(table.name).select(
         attributes
           .filter((attr) => attr.read)
           .map((attr) => attr.name)
           .join(", ")
       );
+
+      if (searchField && searchValue) {
+        const attribute = attributes.find((attr) => attr.name === searchField);
+
+        if (attribute) {
+          if (attribute.type === "string") {
+            query = query.ilike(searchField, `%${searchValue}%`);
+          } else {
+            query = query.eq(searchField, searchValue);
+          }
+        }
+      }
+
+      const { data: tableData, error } = await query;
 
       if (error) {
         console.error("Error fetching table data:", error);
@@ -39,7 +56,14 @@ export default function ProjectTable({
     };
 
     fetchData();
-  }, [table, attributes, supabaseUrl, supabaseServiceRoleKey]);
+  }, [
+    table,
+    attributes,
+    supabaseUrl,
+    supabaseServiceRoleKey,
+    searchField,
+    searchValue,
+  ]);
 
   const columns = attributes
     .filter((attr) => attr.read)
