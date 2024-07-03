@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Form, Input, Select, Button, Spin } from "antd";
+import { Modal, Form, Input, Select, Button, Spin, Upload } from "antd";
 import { createClient } from "@supabase/supabase-js";
+import { UploadOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -30,9 +31,22 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
 
   useEffect(() => {
     if (record) {
-      form.setFieldsValue(record);
+      const initialValues = { ...record };
+      attributes.forEach((attr) => {
+        if (attr.metaType === "image" && record[attr.name]) {
+          initialValues[attr.name] = [
+            {
+              uid: "-1",
+              name: "image.png",
+              status: "done",
+              url: record[attr.name],
+            },
+          ];
+        }
+      });
+      form.setFieldsValue(initialValues);
     }
-  }, [record, form]);
+  }, [record, form, attributes]);
 
   const renderFormFields = () => {
     return attributes.map((attr) => {
@@ -65,16 +79,50 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
           </Form.Item>
         );
       } else if (attr.type === "string") {
-        return (
-          <Form.Item
-            key={attr.name}
-            name={attr.name}
-            label={attr.name}
-            rules={[{ required: true, message: `Please input ${attr.name}` }]}
-          >
-            <Input type="text" />
-          </Form.Item>
-        );
+        if (attr.metaType === "image") {
+          return (
+            <Form.Item
+              key={attr.name}
+              name={attr.name}
+              label={attr.name}
+              valuePropName="fileList"
+              getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+              rules={[
+                { required: true, message: `Please upload ${attr.name}` },
+              ]}
+            >
+              <Upload
+                listType="picture"
+                beforeUpload={() => false}
+                defaultFileList={
+                  record && record[attr.name]
+                    ? [
+                        {
+                          uid: "-1",
+                          name: "image.png",
+                          status: "done",
+                          url: record[attr.name],
+                        },
+                      ]
+                    : []
+                }
+              >
+                <Button icon={<UploadOutlined />}>Click to upload</Button>
+              </Upload>
+            </Form.Item>
+          );
+        } else {
+          return (
+            <Form.Item
+              key={attr.name}
+              name={attr.name}
+              label={attr.name}
+              rules={[{ required: true, message: `Please input ${attr.name}` }]}
+            >
+              <Input type="text" />
+            </Form.Item>
+          );
+        }
       } else if (attr.type === "boolean") {
         return (
           <Form.Item

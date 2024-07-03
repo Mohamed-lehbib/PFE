@@ -1,5 +1,6 @@
 import React from "react";
-import { Modal, Form, Input, Select, Button, Spin } from "antd";
+import { Modal, Form, Input, Select, Button, Spin, Upload } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -19,6 +20,13 @@ const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
   isSubmitting,
 }) => {
   const [form] = Form.useForm();
+
+  const getValueFromEvent = (e: any) => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e && e.fileList;
+  };
 
   const renderFormFields = () => {
     return attributes.map((attr) => {
@@ -51,16 +59,46 @@ const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
           </Form.Item>
         );
       } else if (attr.type === "string") {
-        return (
-          <Form.Item
-            key={attr.name}
-            name={attr.name}
-            label={attr.name}
-            rules={[{ required: true, message: `Please input ${attr.name}` }]}
-          >
-            <Input type="text" />
-          </Form.Item>
-        );
+        if (attr.metaType === "textarea") {
+          return (
+            <Form.Item
+              key={attr.name}
+              name={attr.name}
+              label={attr.name}
+              rules={[{ required: true, message: `Please input ${attr.name}` }]}
+            >
+              <Input.TextArea />
+            </Form.Item>
+          );
+        } else if (attr.metaType === "image") {
+          return (
+            <Form.Item
+              key={attr.name}
+              name={attr.name}
+              label={attr.name}
+              valuePropName="fileList"
+              getValueFromEvent={getValueFromEvent}
+              rules={[
+                { required: true, message: `Please upload ${attr.name}` },
+              ]}
+            >
+              <Upload listType="picture" beforeUpload={() => false}>
+                <Button icon={<UploadOutlined />}>Click to upload</Button>
+              </Upload>
+            </Form.Item>
+          );
+        } else {
+          return (
+            <Form.Item
+              key={attr.name}
+              name={attr.name}
+              label={attr.name}
+              rules={[{ required: true, message: `Please input ${attr.name}` }]}
+            >
+              <Input type="text" />
+            </Form.Item>
+          );
+        }
       } else if (attr.type === "boolean") {
         return (
           <Form.Item
@@ -95,7 +133,7 @@ const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     form
       .validateFields()
       .then((values) => {
-        onCreate(values);
+        onCreate(values); // Send values directly
         form.resetFields();
       })
       .catch((info) => {

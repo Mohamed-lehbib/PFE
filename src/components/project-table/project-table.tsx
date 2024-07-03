@@ -109,6 +109,12 @@ export default function ProjectTable({
       title: attr.name,
       dataIndex: attr.name,
       key: attr.name,
+      render: (text: any) =>
+        attr.metaType === "image" ? (
+          <img src={text} alt={attr.name} style={{ width: "100px" }} />
+        ) : (
+          text
+        ),
     }));
 
   if (table.actions.includes("delete") || table.actions.includes("update")) {

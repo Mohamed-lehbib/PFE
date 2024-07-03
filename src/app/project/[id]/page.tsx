@@ -112,7 +112,35 @@ export default function ProjectPage() {
     setIsSubmitting(true);
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-    const { error } = await supabase.from(selectedTable.name).insert(values);
+    const dataToInsert = { ...values };
+
+    // Handle file uploads
+    for (const key in values) {
+      if (values[key] && values[key][0] && values[key][0].originFileObj) {
+        const file = values[key][0].originFileObj;
+        const { data, error } = await supabase.storage
+          .from("your_bucket_name")
+          .upload(`public/${file.name}`, file);
+
+        if (error) {
+          console.error("Error uploading file:", error);
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Get public URL for the uploaded file
+        const publicUrl = supabase.storage
+          .from("your_bucket_name")
+          .getPublicUrl(`public/${file.name}`).data.publicUrl;
+
+        dataToInsert[key] = publicUrl;
+      }
+    }
+
+    // Insert the data into the table
+    const { error } = await supabase
+      .from(selectedTable.name)
+      .insert(dataToInsert);
 
     if (error) {
       console.error("Error creating record:", error);
