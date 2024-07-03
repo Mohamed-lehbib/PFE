@@ -70,7 +70,7 @@ const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
               <Input.TextArea />
             </Form.Item>
           );
-        } else if (attr.metaType === "image") {
+        } else if (attr.metaType === "image" || attr.metaType === "file") {
           return (
             <Form.Item
               key={attr.name}

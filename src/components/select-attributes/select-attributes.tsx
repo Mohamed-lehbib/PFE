@@ -1,6 +1,6 @@
 import { getTablesByProjectId } from "@/queries/tables/get-tables-by-project-id/get-tables-by-project-id";
 import { createClient } from "@/utils/supabase/client";
-import { Button, Spin, Table, message, Progress, Checkbox, Select } from "antd";
+import { Button, Spin, Table, message, Progress, Checkbox, Select, Input } from "antd";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -20,6 +20,7 @@ interface AttributeData {
   create: boolean;
   update: boolean;
   enumValues?: string[];
+  bucketName?: string; // Add bucketName property
 }
 
 function mapAttributes(attributes: any[]): AttributeData[] {
@@ -152,6 +153,17 @@ export default function SelectAttributes() {
     });
   };
 
+  const handleBucketNameChange = (attributeName: string, bucketName: string) => {
+    const updatedAttributes = currentTable.attributes.map((attr) =>
+      attr.name === attributeName ? { ...attr, bucketName } : attr
+    );
+    setTables((prevTables) => {
+      const newTables = [...prevTables];
+      newTables[currentTableIndex].attributes = updatedAttributes;
+      return newTables;
+    });
+  };
+
   const currentTable = tables[currentTableIndex];
   const columns = [
     {
@@ -180,6 +192,21 @@ export default function SelectAttributes() {
             <Select.Option value="file">File</Select.Option>
             <Select.Option value="image">Image</Select.Option>
           </Select>
+        ) : null,
+    },
+    {
+      title: "Bucket Name",
+      dataIndex: "bucketName",
+      key: "bucketName",
+      render: (bucketName: string, record: AttributeData) =>
+        record.metaType === "file" || record.metaType === "image" ? (
+          <Input
+            value={bucketName}
+            onChange={(e) =>
+              handleBucketNameChange(record.name, e.target.value)
+            }
+            placeholder="Enter bucket name"
+          />
         ) : null,
     },
     {

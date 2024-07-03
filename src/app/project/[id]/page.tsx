@@ -118,8 +118,11 @@ export default function ProjectPage() {
     for (const key in values) {
       if (values[key] && values[key][0] && values[key][0].originFileObj) {
         const file = values[key][0].originFileObj;
+        const attribute = attributes.find((attr) => attr.name === key);
+        const bucketName = attribute?.bucketName || "default-bucket";
+
         const { data, error } = await supabase.storage
-          .from("your_bucket_name")
+          .from(bucketName)
           .upload(`public/${file.name}`, file);
 
         if (error) {
@@ -130,7 +133,7 @@ export default function ProjectPage() {
 
         // Get public URL for the uploaded file
         const publicUrl = supabase.storage
-          .from("your_bucket_name")
+          .from(bucketName)
           .getPublicUrl(`public/${file.name}`).data.publicUrl;
 
         dataToInsert[key] = publicUrl;
