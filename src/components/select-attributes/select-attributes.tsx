@@ -1,5 +1,4 @@
 import { getTablesByProjectId } from "@/queries/tables/get-tables-by-project-id/get-tables-by-project-id";
-import { updateTableAttributes } from "@/queries/tables/update-table-attributes/update-table-attributes";
 import { createClient } from "@/utils/supabase/client";
 import { Button, Spin, Table, message, Progress, Checkbox, Select } from "antd";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
@@ -91,14 +90,24 @@ export default function SelectAttributes() {
   const handleSaveAndNext = async () => {
     setLoading(true);
     const currentTable = tables[currentTableIndex];
-    const result = await updateTableAttributes(params.id, {
-      id: currentTable.id,
-      attributes: currentTable.attributes,
-    });
+    const response = await fetch(
+      `/api/tables/update-table-attributes/${params.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tableId: currentTable.id,
+          attributes: currentTable.attributes,
+        }),
+      }
+    );
 
+    const result = await response.json();
     setLoading(false);
 
-    if (result.status === 200) {
+    if (response.ok) {
       if (currentTableIndex < tables.length - 1) {
         setCurrentTableIndex(currentTableIndex + 1);
       } else {
@@ -113,6 +122,7 @@ export default function SelectAttributes() {
       }
     } else {
       message.error("Failed to save table configuration");
+      console.error("Failed to save table configuration:", result.error);
     }
   };
 
