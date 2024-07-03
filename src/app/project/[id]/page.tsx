@@ -116,12 +116,12 @@ export default function ProjectPage() {
 
     // Handle file uploads
     for (const key in values) {
-      if (values[key] && values[key][0] && values[key][0].originFileObj) {
+      if (values[key][0]?.originFileObj) {
         const file = values[key][0].originFileObj;
         const attribute = attributes.find((attr) => attr.name === key);
         const bucketName = attribute?.bucketName || "default-bucket";
 
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
           .from(bucketName)
           .upload(`public/${file.name}`, file);
 

@@ -95,7 +95,7 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
                 listType="picture"
                 beforeUpload={() => false}
                 defaultFileList={
-                  record && record[attr.name]
+                  record?.[attr.name]
                     ? [
                         {
                           uid: "-1",

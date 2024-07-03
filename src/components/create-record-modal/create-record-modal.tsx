@@ -25,7 +25,7 @@ const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     if (Array.isArray(e)) {
       return e;
     }
-    return e && e.fileList;
+    return e?.fileList;
   };
 
   const renderFormFields = () => {
