@@ -1,5 +1,3 @@
-import { getTablesByProjectId } from "@/queries/tables/get-tables-by-project-id/get-tables-by-project-id";
-import { updateTableStatusActions } from "@/queries/tables/update-table-status-actions/update-table-status-actions";
 import { AttributeWithEnum } from "@/utils/tableParser/tableParser";
 import { Button, Checkbox, Spin, Table, message } from "antd";
 import { useParams } from "next/navigation";
@@ -34,9 +32,12 @@ export default function SelectTables({
     const fetchTables = async () => {
       setLoading(true);
       try {
-        const response = await getTablesByProjectId(params.id);
-        if (response.status === 200 && response.tables) {
-          const tableData = response.tables.map((table: any) => ({
+        const response = await fetch(
+          `/api/tables/get-table-by-project-id/${params.id}`
+        );
+        const result = await response.json();
+        if (response.status === 200 && result.data) {
+          const tableData = result.data.map((table: any) => ({
             ...table,
             all: false,
             create: false,
@@ -47,7 +48,7 @@ export default function SelectTables({
           }));
           setTables(tableData);
         } else {
-          console.error("Failed to fetch tables:", response.error);
+          console.error("Failed to fetch tables:", result.error);
         }
       } catch (error) {
         console.error("Error fetching tables:", error);
@@ -104,15 +105,25 @@ export default function SelectTables({
       };
     });
     console.log("updateTable", updatedTables);
-    const response = await updateTableStatusActions(params.id, updatedTables);
+    const response = await fetch(
+      `/api/tables/update-table-status-actions/${params.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ updatedTables }),
+      }
+    );
 
+    const result = await response.json();
     if (response.status === 200) {
       message.success("Tables updated successfully");
       setLoading(false);
       onNext();
     } else {
       message.error("Failed to update tables");
-      console.error("Failed to update tables:", response.error);
+      console.error("Failed to update tables:", result.error);
       setLoading(false);
       // Handle error case, maybe show a message to the user
     }
