@@ -14,6 +14,8 @@ interface ProjectTableProps {
   onTableChange: () => void;
 }
 
+const fallbackImage = "/assets/images/fallback-image.jpeg";
+
 export default function ProjectTable({
   table,
   attributes,
@@ -111,7 +113,14 @@ export default function ProjectTable({
       key: attr.name,
       render: (text: any) =>
         attr.metaType === "image" ? (
-          <img src={text} alt={attr.name} style={{ width: "100px" }} />
+          <img
+            src={text || fallbackImage}
+            alt={attr.name}
+            style={{ width: "100px" }}
+            onError={(e: any) => {
+              e.target.src = fallbackImage;
+            }}
+          />
         ) : (
           text
         ),

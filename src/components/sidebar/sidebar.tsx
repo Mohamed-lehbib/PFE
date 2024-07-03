@@ -40,6 +40,7 @@ export default function Sidebar({
         .from("tables")
         .select("id, name, actions") // Include actions in the query
         .eq("project_id", projectId)
+        .contains("actions", ["read"])
         .order("name", { ascending: true });
 
       if (tableError) {
@@ -88,6 +89,8 @@ export default function Sidebar({
     label: table.name,
   }));
 
+  const fallbackImage = "/assets/images/fallback-image.jpeg";
+
   return (
     <Sider
       trigger={null}
@@ -117,7 +120,7 @@ export default function Sidebar({
       >
         {project ? (
           <Image
-            src={project.project_logo}
+            src={project.project_logo || fallbackImage}
             alt="App Icon"
             width={80} // Increase the size to 80px
             height={80} // Increase the size to 80px
