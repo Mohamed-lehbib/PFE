@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { InboxOutlined } from "@ant-design/icons";
 import { Button, Upload, message, Spin } from "antd";
-import { parseSupabaseTablesWithAttributes } from "@/utils/tableParser/tableParser"; // Adjust import
+import { parseSupabaseTablesWithAttributes } from "@/utils/tableParser/tableParser";
 import { useParams } from "next/navigation";
-import { insertTables } from "@/queries/tables/create-table/create-table";
+
 const { Dragger } = Upload;
 
 interface Props {
@@ -39,26 +39,38 @@ const TsFileUploader = ({ onNext, onPrevious }: Props) => {
           text as string
         );
         console.log("Parsed tables with attributes:", tablesWithAttributes);
-        const response = await insertTables(
-          tablesWithAttributes.map(({ tableName, attributes }) => ({
-            name: tableName,
-            project_id: params.id,
-            attributes,
-            status: "SHOWN",
-          }))
-        );
-        console.log("Insert response:", response);
+
+        const response = await fetch("/api/project/insert-tables", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            tablesWithAttributes: tablesWithAttributes.map(
+              ({ tableName, attributes }) => ({
+                name: tableName,
+                project_id: params.id,
+                attributes,
+                status: "SHOWN",
+              })
+            ),
+          }),
+        });
+
+        const result = await response.json();
+        console.log("Insert response:", result);
+
         if (response.status === 201) {
           message.success("File uploaded successfully!");
           onNext(); // Move onNext inside onload to ensure parsing is complete before proceeding
         } else {
           let errorMessage = "Failed to upload file. Please try again.";
           if (
-            typeof response.error === "object" &&
-            response.error !== null &&
-            "message" in response.error
+            typeof result.error === "object" &&
+            result.error !== null &&
+            "message" in result.error
           ) {
-            errorMessage = `Failed to upload file: ${response.error.message}`;
+            errorMessage = `Failed to upload file: ${result.error.message}`;
           }
           message.error(errorMessage);
         }
