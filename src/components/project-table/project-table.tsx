@@ -31,6 +31,7 @@ export default function ProjectTable({
   const [recordToDelete, setRecordToDelete] = useState<any>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<any>(null);
+  const [editableAttributes, setEditableAttributes] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,8 +80,24 @@ export default function ProjectTable({
     onTableChange,
   ]);
 
-  const handleEdit = (record: any) => {
-    setRecordToEdit(record);
+  const handleEditClick = async (record: any) => {
+    // Fetch record details directly from the table
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+    const { data: recordData, error } = await supabase
+      .from(table.name)
+      .select("*")
+      .eq("id", record.id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching record details:", error);
+      return;
+    }
+
+    const updateAttributes = attributes.filter((attr) => attr.update);
+
+    setRecordToEdit(recordData);
+    setEditableAttributes(updateAttributes);
     setIsEditModalVisible(true);
   };
 
@@ -136,7 +153,7 @@ export default function ProjectTable({
             <Button
               type="link"
               icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
+              onClick={() => handleEditClick(record)}
             />
           )}
           {table.actions.includes("delete") && (
@@ -175,7 +192,7 @@ export default function ProjectTable({
         table={table}
         supabaseUrl={supabaseUrl}
         supabaseServiceRoleKey={supabaseServiceRoleKey}
-        attributes={attributes.filter((attr) => attr.update)}
+        attributes={editableAttributes}
         onEditSuccess={onTableChange}
       />
     </>

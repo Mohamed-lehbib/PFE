@@ -1,19 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-  Modal,
-  Form,
-  Input,
-  Select,
-  Button,
-  Spin,
-  Upload,
-  message,
-} from "antd";
-import { createClient } from "@supabase/supabase-js";
-import { UploadOutlined } from "@ant-design/icons";
-import { v4 as uuidv4 } from "uuid";
-
-const { Option } = Select;
+import { Modal, Form, Button, Spin, message } from "antd";
+import { fetchRecordAttributes } from "@/queries/records/get-record/get-record";
+import { uploadFile } from "@/queries/records/upload-record-file/upload-record-file";
+import { updateRecord } from "@/queries/records/update-record/update-record";
+import FormFieldsRenderer from "../form-fields-renderer/form-fields-renderer";
 
 interface EditRecordModalProps {
   visible: boolean;
@@ -40,130 +30,55 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (record) {
-      const initialValues = { ...record };
+    const fetchData = async () => {
+      if (!record) return;
+
+      const { data, error } = await fetchRecordAttributes(
+        supabaseUrl,
+        supabaseServiceRoleKey,
+        table.name,
+        record.id
+      );
+
+      if (error) {
+        message.error(`Error fetching record attributes: ${error.message}`);
+        return;
+      }
+
+      const initialValues = { ...data };
       attributes.forEach((attr) => {
-        if (attr.metaType === "image" && record[attr.name]) {
+        if (attr.metaType === "image" && data[attr.name]) {
           initialValues[attr.name] = [
             {
               uid: "-1",
               name: "image.png",
               status: "done",
-              url: record[attr.name],
+              url: data[attr.name],
             },
           ];
         }
       });
       form.setFieldsValue(initialValues);
+    };
+
+    if (visible && record) {
+      fetchData();
     }
-  }, [record, form, attributes]);
+  }, [
+    visible,
+    record,
+    form,
+    attributes,
+    supabaseUrl,
+    supabaseServiceRoleKey,
+    table.name,
+  ]);
 
   const getValueFromEvent = (e: any) => {
     if (Array.isArray(e)) {
-      return e;
+      return e.slice(-1); // Ensure only one file is kept
     }
-    return e?.fileList;
-  };
-
-  const renderFormFields = () => {
-    return attributes.map((attr) => {
-      if (attr.enumValues) {
-        return (
-          <Form.Item
-            key={attr.name}
-            name={attr.name}
-            label={attr.name}
-            rules={[{ required: true, message: `Please select ${attr.name}` }]}
-          >
-            <Select>
-              {attr.enumValues.map((option: string) => (
-                <Option key={option} value={option}>
-                  {option}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        );
-      } else if (attr.type === "number") {
-        return (
-          <Form.Item
-            key={attr.name}
-            name={attr.name}
-            label={attr.name}
-            rules={[{ required: true, message: `Please input ${attr.name}` }]}
-          >
-            <Input type="number" />
-          </Form.Item>
-        );
-      } else if (attr.type === "string") {
-        if (attr.metaType === "textarea") {
-          return (
-            <Form.Item
-              key={attr.name}
-              name={attr.name}
-              label={attr.name}
-              rules={[{ required: true, message: `Please input ${attr.name}` }]}
-            >
-              <Input.TextArea />
-            </Form.Item>
-          );
-        } else if (attr.metaType === "image" || attr.metaType === "file") {
-          return (
-            <Form.Item
-              key={attr.name}
-              name={attr.name}
-              label={attr.name}
-              valuePropName="fileList"
-              getValueFromEvent={getValueFromEvent}
-              rules={[
-                { required: true, message: `Please upload ${attr.name}` },
-              ]}
-            >
-              <Upload listType="picture" beforeUpload={() => false}>
-                <Button icon={<UploadOutlined />}>Click to upload</Button>
-              </Upload>
-            </Form.Item>
-          );
-        } else {
-          return (
-            <Form.Item
-              key={attr.name}
-              name={attr.name}
-              label={attr.name}
-              rules={[{ required: true, message: `Please input ${attr.name}` }]}
-            >
-              <Input type="text" />
-            </Form.Item>
-          );
-        }
-      } else if (attr.type === "boolean") {
-        return (
-          <Form.Item
-            key={attr.name}
-            name={attr.name}
-            label={attr.name}
-            valuePropName="checked"
-            rules={[{ required: true, message: `Please select ${attr.name}` }]}
-          >
-            <Select>
-              <Option value={true}>True</Option>
-              <Option value={false}>False</Option>
-            </Select>
-          </Form.Item>
-        );
-      } else {
-        return (
-          <Form.Item
-            key={attr.name}
-            name={attr.name}
-            label={attr.name}
-            rules={[{ required: true, message: `Please input ${attr.name}` }]}
-          >
-            <Input type={attr.type} />
-          </Form.Item>
-        );
-      }
-    });
+    return e?.fileList.slice(-1); // Ensure only one file is kept
   };
 
   const handleSubmit = async () => {
@@ -171,7 +86,6 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
       const values = await form.validateFields();
       setLoading(true);
 
-      const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
       const dataToUpdate = { ...values };
 
       // Handle file uploads
@@ -180,15 +94,13 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
           const file = values[key][0].originFileObj;
           const attribute = attributes.find((attr) => attr.name === key);
           const bucketName = attribute?.bucketName;
-          const validFileName = file.name.replace(
-            /[^a-zA-Z0-9-._*'()&$@=;:+,?/ ]/g,
-            ""
-          );
-          const filePath = `public/${uuidv4()}/${validFileName}`;
 
-          const { error: uploadError } = await supabase.storage
-            .from(bucketName)
-            .upload(filePath, file);
+          const { error: uploadError, data } = await uploadFile(
+            supabaseUrl,
+            supabaseServiceRoleKey,
+            bucketName,
+            file
+          );
 
           if (uploadError) {
             message.error(`Error uploading file: ${uploadError.message}`);
@@ -196,20 +108,20 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
             return;
           }
 
-          // Get public URL for the uploaded file
-          const { data } = supabase.storage
-            .from(bucketName)
-            .getPublicUrl(filePath);
-
           dataToUpdate[key] = data.publicUrl;
+        } else if (values[key] && values[key][0]?.url) {
+          dataToUpdate[key] = values[key][0].url; // Keep the existing URL if no new file is uploaded
         }
       }
 
       // Update the record in the table
-      const { error } = await supabase
-        .from(table.name)
-        .update(dataToUpdate)
-        .eq("id", record.id);
+      const { error } = await updateRecord(
+        supabaseUrl,
+        supabaseServiceRoleKey,
+        table.name,
+        record.id,
+        dataToUpdate
+      );
 
       if (error) {
         message.error(`Error updating record: ${error.message}`);
@@ -247,7 +159,10 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
     >
       <Spin spinning={loading}>
         <Form form={form} layout="vertical">
-          {renderFormFields()}
+          <FormFieldsRenderer
+            attributes={attributes}
+            getValueFromEvent={getValueFromEvent}
+          />
         </Form>
       </Spin>
     </Modal>

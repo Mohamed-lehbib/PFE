@@ -22,6 +22,7 @@ export default function ProjectPage() {
   } | null>(null);
   const [fields, setFields] = useState<string[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
+  const [createAttributes, setCreateAttributes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [supabaseUrl, setSupabaseUrl] = useState<string>("");
   const [supabaseServiceRoleKey, setSupabaseServiceRoleKey] =
@@ -104,8 +105,26 @@ export default function ProjectPage() {
     setSearchValue(value);
   }, []);
 
-  const handleCreateButtonClick = () => {
-    setIsModalVisible(true);
+  const handleCreateButtonClick = async () => {
+    if (!selectedTable) return;
+
+    const supabase = createSupabaseClient();
+    const { data: tableData, error: tableError } = await supabase
+      .from("tables")
+      .select("attributes")
+      .eq("id", selectedTable.id)
+      .single();
+
+    if (tableError) {
+      console.error("Error fetching table details:", tableError);
+      message.error(`Error fetching table details: ${tableError.message}`);
+    } else {
+      const createAttributes = tableData.attributes.filter(
+        (attr: any) => attr.create
+      );
+      setCreateAttributes(createAttributes);
+      setIsModalVisible(true);
+    }
   };
 
   const handleModalCancel = () => {
@@ -216,7 +235,7 @@ export default function ProjectPage() {
           visible={isModalVisible}
           onCancel={handleModalCancel}
           onCreate={handleModalCreate}
-          attributes={attributes.filter((attr) => attr.create)}
+          attributes={createAttributes.filter((attr) => attr.create)}
           isSubmitting={isSubmitting}
         />
       </Layout>
