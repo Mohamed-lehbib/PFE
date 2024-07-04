@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import React, { useState, useEffect, useCallback } from "react";
-import { Layout, Skeleton, Button } from "antd";
+import { Layout, Skeleton, Button, message } from "antd";
 import Sidebar from "@/components/sidebar/sidebar";
 import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 import ProjectHeader from "@/components/header/header";
@@ -45,6 +45,7 @@ export default function ProjectPage() {
 
       if (tableError) {
         console.error("Error fetching table details:", tableError);
+        message.error(`Error fetching table details: ${tableError.message}`);
       } else {
         const filteredAttributes = tableData.attributes.filter(
           (attr: any) =>
@@ -75,6 +76,9 @@ export default function ProjectPage() {
 
       if (projectError) {
         console.error("Error fetching project details:", projectError);
+        message.error(
+          `Error fetching project details: ${projectError.message}`
+        );
       } else {
         setSupabaseUrl(projectData.supabase_url);
         setSupabaseServiceRoleKey(projectData.supabase_service_role_key);
@@ -108,7 +112,7 @@ export default function ProjectPage() {
     setIsModalVisible(false);
   };
 
-  const handleModalCreate = async (values: any) => {
+  const handleModalCreate = async (values: any, resetForm: () => void) => {
     if (!selectedTable) return;
     setIsSubmitting(true);
 
@@ -120,29 +124,30 @@ export default function ProjectPage() {
       if (values[key][0]?.originFileObj) {
         const file = values[key][0].originFileObj;
         const attribute = attributes.find((attr) => attr.name === key);
-        const bucketName = attribute?.bucketName;
+        const bucketName = attribute?.bucketName || "default-bucket";
         const validFileName = file.name.replace(
           /[^a-zA-Z0-9-._*'()&$@=;:+,?/ ]/g,
           ""
         );
         const filePath = `public/${uuidv4()}/${validFileName}`;
 
-        const { error } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from(bucketName)
           .upload(filePath, file);
 
-        if (error) {
-          console.error("Error uploading file:", error);
+        if (uploadError) {
+          console.error("Error uploading file:", uploadError);
+          message.error(`Error uploading file: ${uploadError.message}`);
           setIsSubmitting(false);
           return;
         }
 
         // Get public URL for the uploaded file
-        const publicUrl = supabase.storage
+        const { data } = supabase.storage
           .from(bucketName)
-          .getPublicUrl(filePath).data.publicUrl;
+          .getPublicUrl(filePath);
 
-        dataToInsert[key] = publicUrl;
+        dataToInsert[key] = data.publicUrl;
       }
     }
 
@@ -153,9 +158,12 @@ export default function ProjectPage() {
 
     if (error) {
       console.error("Error creating record:", error);
+      message.error(`Error creating record: ${error.message}`);
     } else {
+      resetForm();
       setIsModalVisible(false);
       setRefreshTable((prev) => prev + 1); // Increment refreshTable state to refresh the table data
+      message.success("Record created successfully");
     }
 
     setIsSubmitting(false);

@@ -7,7 +7,7 @@ const { Option } = Select;
 interface CreateRecordModalProps {
   visible: boolean;
   onCancel: () => void;
-  onCreate: (values: any) => void;
+  onCreate: (values: any, resetForm: () => void) => void;
   attributes: any[];
   isSubmitting: boolean;
 }
@@ -133,8 +133,7 @@ const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     form
       .validateFields()
       .then((values) => {
-        onCreate(values); // Send values directly
-        form.resetFields();
+        onCreate(values, form.resetFields);
       })
       .catch((info) => {
         console.log("Validate Failed:", info);
