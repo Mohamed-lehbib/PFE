@@ -8,6 +8,7 @@ import ProjectHeader from "@/components/header/header";
 import ProjectTable from "@/components/project-table/project-table";
 import CreateRecordModal from "@/components/create-record-modal/create-record-modal";
 import { createClient } from "@supabase/supabase-js";
+import { v4 as uuidv4 } from "uuid";
 
 const { Content } = Layout;
 
@@ -119,11 +120,16 @@ export default function ProjectPage() {
       if (values[key][0]?.originFileObj) {
         const file = values[key][0].originFileObj;
         const attribute = attributes.find((attr) => attr.name === key);
-        const bucketName = attribute?.bucketName || "default-bucket";
+        const bucketName = attribute?.bucketName;
+        const validFileName = file.name.replace(
+          /[^a-zA-Z0-9-._*'()&$@=;:+,?/ ]/g,
+          ""
+        );
+        const filePath = `public/${uuidv4()}/${validFileName}`;
 
         const { error } = await supabase.storage
           .from(bucketName)
-          .upload(`public/${file.name}`, file);
+          .upload(filePath, file);
 
         if (error) {
           console.error("Error uploading file:", error);
@@ -134,7 +140,7 @@ export default function ProjectPage() {
         // Get public URL for the uploaded file
         const publicUrl = supabase.storage
           .from(bucketName)
-          .getPublicUrl(`public/${file.name}`).data.publicUrl;
+          .getPublicUrl(filePath).data.publicUrl;
 
         dataToInsert[key] = publicUrl;
       }

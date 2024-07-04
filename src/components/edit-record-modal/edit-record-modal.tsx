@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Form, Input, Select, Button, Spin, Upload } from "antd";
+import {
+  Modal,
+  Form,
+  Input,
+  Select,
+  Button,
+  Spin,
+  Upload,
+  message,
+} from "antd";
 import { createClient } from "@supabase/supabase-js";
 import { UploadOutlined } from "@ant-design/icons";
+import { v4 as uuidv4 } from "uuid";
 
 const { Option } = Select;
 
@@ -48,6 +58,13 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
     }
   }, [record, form, attributes]);
 
+  const getValueFromEvent = (e: any) => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e?.fileList;
+  };
+
   const renderFormFields = () => {
     return attributes.map((attr) => {
       if (attr.enumValues) {
@@ -79,34 +96,30 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
           </Form.Item>
         );
       } else if (attr.type === "string") {
-        if (attr.metaType === "image") {
+        if (attr.metaType === "textarea") {
+          return (
+            <Form.Item
+              key={attr.name}
+              name={attr.name}
+              label={attr.name}
+              rules={[{ required: true, message: `Please input ${attr.name}` }]}
+            >
+              <Input.TextArea />
+            </Form.Item>
+          );
+        } else if (attr.metaType === "image" || attr.metaType === "file") {
           return (
             <Form.Item
               key={attr.name}
               name={attr.name}
               label={attr.name}
               valuePropName="fileList"
-              getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+              getValueFromEvent={getValueFromEvent}
               rules={[
                 { required: true, message: `Please upload ${attr.name}` },
               ]}
             >
-              <Upload
-                listType="picture"
-                beforeUpload={() => false}
-                defaultFileList={
-                  record?.[attr.name]
-                    ? [
-                        {
-                          uid: "-1",
-                          name: "image.png",
-                          status: "done",
-                          url: record[attr.name],
-                        },
-                      ]
-                    : []
-                }
-              >
+              <Upload listType="picture" beforeUpload={() => false}>
                 <Button icon={<UploadOutlined />}>Click to upload</Button>
               </Upload>
             </Form.Item>
@@ -159,19 +172,55 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
       setLoading(true);
 
       const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+      const dataToUpdate = { ...values };
+
+      // Handle file uploads
+      for (const key in values) {
+        if (values[key] && values[key][0]?.originFileObj) {
+          const file = values[key][0].originFileObj;
+          const attribute = attributes.find((attr) => attr.name === key);
+          const bucketName = attribute?.bucketName;
+          const validFileName = file.name.replace(
+            /[^a-zA-Z0-9-._*'()&$@=;:+,?/ ]/g,
+            ""
+          );
+          const filePath = `public/${uuidv4()}/${validFileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from(bucketName)
+            .upload(filePath, file);
+
+          if (uploadError) {
+            message.error(`Error uploading file: ${uploadError.message}`);
+            setLoading(false);
+            return;
+          }
+
+          // Get public URL for the uploaded file
+          const { data } = supabase.storage
+            .from(bucketName)
+            .getPublicUrl(filePath);
+
+          dataToUpdate[key] = data.publicUrl;
+        }
+      }
+
+      // Update the record in the table
       const { error } = await supabase
         .from(table.name)
-        .update(values)
+        .update(dataToUpdate)
         .eq("id", record.id);
 
       if (error) {
-        console.error("Error updating record:", error);
+        message.error(`Error updating record: ${error.message}`);
       } else {
         onEditSuccess();
         onCancel();
+        message.success("Record updated successfully");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log("Validate Failed:", error);
+      message.error(`Validation Failed: ${error.message}`);
     } finally {
       setLoading(false);
     }
