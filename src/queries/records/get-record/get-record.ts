@@ -1,6 +1,6 @@
 import { createProjectClient } from "@/utils/supabase/client";
 
-export async function fetchRecordAttributes(
+export async function fetchRecordDetails(
   supabaseUrl: string,
   supabaseServiceRoleKey: string,
   tableName: string,

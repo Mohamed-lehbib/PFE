@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
-import { Table, Skeleton, Button, Space, Modal } from "antd";
-import { createClient } from "@supabase/supabase-js";
+import React, { useEffect, useState } from "react";
+import { Table, Skeleton, Button, Space, Modal, message } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import EditRecordModal from "@/components/edit-record-modal/edit-record-modal";
+import { fetchTableData } from "@/queries/records/list-records/list-records";
+import { deleteRecord } from "@/queries/records/delete-record/delete-record";
+import { fetchRecordDetails } from "@/queries/records/get-record/get-record";
 
 interface ProjectTableProps {
   table: { id: number; name: string; actions: string[] };
@@ -35,35 +37,20 @@ export default function ProjectTable({
 
   useEffect(() => {
     const fetchData = async () => {
-      const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-      let query = supabase
-        .from(table.name)
-        .select(
-          attributes
-            .filter((attr) => attr.read)
-            .map((attr) => attr.name)
-            .join(", ")
-        )
-        .order("id", { ascending: false });
-
-      if (searchField && searchValue) {
-        const attribute = attributes.find((attr) => attr.name === searchField);
-
-        if (attribute) {
-          if (attribute.type === "string") {
-            query = query.ilike(searchField, `%${searchValue}%`);
-          } else {
-            query = query.eq(searchField, searchValue);
-          }
-        }
-      }
-
-      const { data: tableData, error } = await query;
+      setLoading(true);
+      const { data, error } = await fetchTableData(
+        supabaseUrl,
+        supabaseServiceRoleKey,
+        table.name,
+        attributes,
+        searchField,
+        searchValue
+      );
 
       if (error) {
         console.error("Error fetching table data:", error);
       } else {
-        setData(tableData);
+        setData(data);
       }
 
       setLoading(false);
@@ -81,16 +68,15 @@ export default function ProjectTable({
   ]);
 
   const handleEditClick = async (record: any) => {
-    // Fetch record details directly from the table
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-    const { data: recordData, error } = await supabase
-      .from(table.name)
-      .select("*")
-      .eq("id", record.id)
-      .single();
+    const { data: recordData, error } = await fetchRecordDetails(
+      supabaseUrl,
+      supabaseServiceRoleKey,
+      table.name,
+      record.id
+    );
 
     if (error) {
-      console.error("Error fetching record details:", error);
+      message.error(`Error fetching record details: ${error.message}`);
       return;
     }
 
@@ -102,14 +88,15 @@ export default function ProjectTable({
   };
 
   const handleDelete = async () => {
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-    const { error } = await supabase
-      .from(table.name)
-      .delete()
-      .eq("id", recordToDelete.id);
+    const { error } = await deleteRecord(
+      supabaseUrl,
+      supabaseServiceRoleKey,
+      table.name,
+      recordToDelete.id
+    );
 
     if (error) {
-      console.error("Error deleting record:", error);
+      message.error(`Error deleting record: ${error.message}`);
     } else {
       setData(data.filter((item) => item.id !== recordToDelete.id));
       setIsDeleteModalVisible(false);

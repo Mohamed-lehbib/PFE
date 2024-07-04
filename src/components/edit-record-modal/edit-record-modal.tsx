@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Form, Button, Spin, message } from "antd";
-import { fetchRecordAttributes } from "@/queries/records/get-record/get-record";
+import { fetchRecordDetails } from "@/queries/records/get-record/get-record";
 import { uploadFile } from "@/queries/records/upload-record-file/upload-record-file";
 import { updateRecord } from "@/queries/records/update-record/update-record";
 import FormFieldsRenderer from "../form-fields-renderer/form-fields-renderer";
@@ -33,7 +33,7 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
     const fetchData = async () => {
       if (!record) return;
 
-      const { data, error } = await fetchRecordAttributes(
+      const { data, error } = await fetchRecordDetails(
         supabaseUrl,
         supabaseServiceRoleKey,
         table.name,
