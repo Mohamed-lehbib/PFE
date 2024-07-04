@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Table, Skeleton, Button, Space, Modal, message } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Table, Skeleton, Modal, message } from "antd";
 import EditRecordModal from "@/components/edit-record-modal/edit-record-modal";
 import { fetchTableData } from "@/queries/records/list-records/list-records";
 import { deleteRecord } from "@/queries/records/delete-record/delete-record";
 import { fetchRecordDetails } from "@/queries/records/get-record/get-record";
+import { generateColumns } from "@/utils/generate-columns/generate-columns";
 
 interface ProjectTableProps {
   table: { id: number; name: string; actions: string[] };
@@ -16,9 +16,7 @@ interface ProjectTableProps {
   onTableChange: () => void;
 }
 
-const fallbackImage = "/assets/images/fallback-image.jpeg";
-
-export default function ProjectTable({
+const ProjectTable: React.FC<ProjectTableProps> = ({
   table,
   attributes,
   supabaseUrl,
@@ -26,7 +24,7 @@ export default function ProjectTable({
   searchField,
   searchValue,
   onTableChange,
-}: Readonly<ProjectTableProps>) {
+}) => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
@@ -48,7 +46,7 @@ export default function ProjectTable({
       );
 
       if (error) {
-        console.error("Error fetching table data:", error);
+        message.error(`Error fetching table data: ${error.message}`);
       } else {
         setData(data);
       }
@@ -109,51 +107,12 @@ export default function ProjectTable({
     setIsDeleteModalVisible(true);
   };
 
-  const columns: any[] = attributes
-    .filter((attr) => attr.read)
-    .map((attr) => ({
-      title: attr.name,
-      dataIndex: attr.name,
-      key: attr.name,
-      render: (text: any) =>
-        attr.metaType === "image" ? (
-          <img
-            src={text || fallbackImage}
-            alt={attr.name}
-            style={{ width: "100px" }}
-            onError={(e: any) => {
-              e.target.src = fallbackImage;
-            }}
-          />
-        ) : (
-          text
-        ),
-    }));
-
-  if (table.actions.includes("delete") || table.actions.includes("update")) {
-    columns.push({
-      title: "Action",
-      key: "action",
-      render: (_: any, record: any) => (
-        <Space size="middle">
-          {table.actions.includes("update") && (
-            <Button
-              type="link"
-              icon={<EditOutlined />}
-              onClick={() => handleEditClick(record)}
-            />
-          )}
-          {table.actions.includes("delete") && (
-            <Button
-              type="link"
-              icon={<DeleteOutlined style={{ color: "red" }} />}
-              onClick={() => showDeleteModal(record)}
-            />
-          )}
-        </Space>
-      ),
-    });
-  }
+  const columns = generateColumns(
+    attributes,
+    table.actions,
+    handleEditClick,
+    showDeleteModal
+  );
 
   return (
     <>
@@ -172,16 +131,20 @@ export default function ProjectTable({
       >
         <p>Are you sure you want to delete the record?</p>
       </Modal>
-      <EditRecordModal
-        visible={isEditModalVisible}
-        onCancel={() => setIsEditModalVisible(false)}
-        record={recordToEdit}
-        table={table}
-        supabaseUrl={supabaseUrl}
-        supabaseServiceRoleKey={supabaseServiceRoleKey}
-        attributes={editableAttributes}
-        onEditSuccess={onTableChange}
-      />
+      {recordToEdit && (
+        <EditRecordModal
+          visible={isEditModalVisible}
+          onCancel={() => setIsEditModalVisible(false)}
+          record={recordToEdit}
+          table={table}
+          supabaseUrl={supabaseUrl}
+          supabaseServiceRoleKey={supabaseServiceRoleKey}
+          attributes={editableAttributes}
+          onEditSuccess={onTableChange}
+        />
+      )}
     </>
   );
-}
+};
+
+export default ProjectTable;
