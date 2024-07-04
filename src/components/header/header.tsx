@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Layout, Typography, Select, Input, Skeleton, Button } from "antd";
 
 const { Header } = Layout;
@@ -29,19 +29,62 @@ const ProjectHeader: React.FC<HeaderProps> = ({
     }
   }, [selectedField, searchValue, onSearch]);
 
-  const handleFieldChange = (value: string) => {
+  const handleFieldChange = useCallback((value: string) => {
     setSelectedField(value);
-  };
+  }, []);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value);
-  };
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchValue(e.target.value);
+    },
+    []
+  );
 
-  const handleClearFilter = () => {
+  const handleClearFilter = useCallback(() => {
     setSelectedField(undefined);
     setSearchValue("");
     onSearch("", "");
-  };
+  }, [onSearch]);
+
+  const renderSkeleton = () => (
+    <>
+      <Skeleton.Input
+        active
+        style={{ width: 150, marginRight: 16, padding: "8px" }}
+      />
+      <Skeleton.Input
+        active
+        style={{ width: 200, marginRight: 16, padding: "8px" }}
+      />
+      <Skeleton.Button active style={{ padding: "8px" }} />
+    </>
+  );
+
+  const renderSearchControls = () => (
+    <>
+      <Select
+        placeholder="Select field for search"
+        style={{ width: 200, marginRight: 16 }}
+        onChange={handleFieldChange}
+        value={selectedField}
+      >
+        {fields.map((field) => (
+          <Option key={field} value={field}>
+            {field}
+          </Option>
+        ))}
+      </Select>
+      <Input
+        placeholder="Enter search value"
+        style={{ width: 200, marginRight: 16 }}
+        onChange={handleSearchChange}
+        value={searchValue}
+      />
+      <Button type="primary" onClick={handleClearFilter}>
+        Clear Filter
+      </Button>
+    </>
+  );
 
   return (
     <Header
@@ -59,43 +102,7 @@ const ProjectHeader: React.FC<HeaderProps> = ({
         <Title level={4}>{selectedTable}</Title>
       )}
       <div style={{ display: "flex", alignItems: "center" }}>
-        {loading ? (
-          <>
-            <Skeleton.Input
-              active
-              style={{ width: 150, marginRight: 16, padding: "8px" }}
-            />
-            <Skeleton.Input
-              active
-              style={{ width: 200, marginRight: 16, padding: "8px" }}
-            />
-            <Skeleton.Button active style={{ padding: "8px" }} />
-          </>
-        ) : (
-          <>
-            <Select
-              placeholder="Select field for search"
-              style={{ width: 200, marginRight: 16 }}
-              onChange={handleFieldChange}
-              value={selectedField}
-            >
-              {fields.map((field) => (
-                <Option key={field} value={field}>
-                  {field}
-                </Option>
-              ))}
-            </Select>
-            <Input
-              placeholder="Enter search value"
-              style={{ width: 200, marginRight: 16 }}
-              onChange={handleSearchChange}
-              value={searchValue}
-            />
-            <Button type="primary" onClick={handleClearFilter}>
-              Clear Filter
-            </Button>
-          </>
-        )}
+        {loading ? renderSkeleton() : renderSearchControls()}
       </div>
     </Header>
   );
