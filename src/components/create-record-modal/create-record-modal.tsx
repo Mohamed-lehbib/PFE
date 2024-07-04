@@ -21,9 +21,9 @@ const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
 
   const getValueFromEvent = (e: any) => {
     if (Array.isArray(e)) {
-      return e;
+      return e.slice(-1); // Ensure only one file is kept
     }
-    return e?.fileList;
+    return e?.fileList.slice(-1); // Ensure only one file is kept
   };
 
   const handleSubmit = () => {

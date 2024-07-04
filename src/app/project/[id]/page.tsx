@@ -3,12 +3,13 @@ import { useParams } from "next/navigation";
 import React, { useState, useEffect, useCallback } from "react";
 import { Layout, Skeleton, Button, message } from "antd";
 import Sidebar from "@/components/sidebar/sidebar";
-import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 import ProjectHeader from "@/components/header/header";
 import ProjectTable from "@/components/project-table/project-table";
 import CreateRecordModal from "@/components/create-record-modal/create-record-modal";
-import { createClient } from "@supabase/supabase-js";
-import { v4 as uuidv4 } from "uuid";
+import { getTablesByProjectId } from "@/queries/tables/get-tables-by-project-id/get-tables-by-project-id";
+import { uploadFile } from "@/queries/records/upload-record-file/upload-record-file";
+import { createRecord } from "@/queries/records/create-record/create-record";
+import { fetchProjectCredentials } from "@/queries/project/get-project-credentials/get-project-credentials";
 
 const { Content } = Layout;
 
@@ -37,18 +38,16 @@ export default function ProjectPage() {
     const fetchTableDetails = async () => {
       if (!selectedTable) return;
 
-      const supabase = createSupabaseClient();
-      const { data: tableData, error: tableError } = await supabase
-        .from("tables")
-        .select("*")
-        .eq("id", selectedTable.id)
-        .single();
+      const { tables, error } = await getTablesByProjectId(projectId);
 
-      if (tableError) {
-        console.error("Error fetching table details:", tableError);
-        message.error(`Error fetching table details: ${tableError.message}`);
-      } else {
-        const filteredAttributes = tableData.attributes.filter(
+      if (error) {
+        console.error("Error fetching table details:", error);
+        message.error(`Error fetching table details: ${error}`);
+      } else if (tables) {
+        const table = tables.find(
+          (table: any) => table.id === selectedTable.id
+        );
+        const filteredAttributes = table.attributes.filter(
           (attr: any) =>
             attr.read &&
             (!attr.meta_type ||
@@ -64,25 +63,18 @@ export default function ProjectPage() {
     if (selectedTable) {
       fetchTableDetails();
     }
-  }, [selectedTable]);
+  }, [selectedTable, projectId]);
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
-      const supabase = createSupabaseClient();
-      const { data: projectData, error: projectError } = await supabase
-        .from("project")
-        .select("supabase_url, supabase_service_role_key")
-        .eq("id", projectId)
-        .single();
+      const { data, error } = await fetchProjectCredentials(projectId);
 
-      if (projectError) {
-        console.error("Error fetching project details:", projectError);
-        message.error(
-          `Error fetching project details: ${projectError.message}`
-        );
-      } else {
-        setSupabaseUrl(projectData.supabase_url);
-        setSupabaseServiceRoleKey(projectData.supabase_service_role_key);
+      if (error) {
+        console.error("Error fetching project details:", error);
+        message.error(`Error fetching project details: ${error}`);
+      } else if (data) {
+        setSupabaseUrl(data.supabase_url);
+        setSupabaseServiceRoleKey(data.supabase_service_role_key);
       }
     };
 
@@ -108,18 +100,14 @@ export default function ProjectPage() {
   const handleCreateButtonClick = async () => {
     if (!selectedTable) return;
 
-    const supabase = createSupabaseClient();
-    const { data: tableData, error: tableError } = await supabase
-      .from("tables")
-      .select("attributes")
-      .eq("id", selectedTable.id)
-      .single();
+    const { tables, error } = await getTablesByProjectId(projectId);
 
-    if (tableError) {
-      console.error("Error fetching table details:", tableError);
-      message.error(`Error fetching table details: ${tableError.message}`);
-    } else {
-      const createAttributes = tableData.attributes.filter(
+    if (error) {
+      console.error("Error fetching table details:", error);
+      message.error(`Error fetching table details: ${error}`);
+    } else if (tables) {
+      const table = tables.find((table: any) => table.id === selectedTable.id);
+      const createAttributes = table.attributes.filter(
         (attr: any) => attr.create
       );
       setCreateAttributes(createAttributes);
@@ -135,7 +123,6 @@ export default function ProjectPage() {
     if (!selectedTable) return;
     setIsSubmitting(true);
 
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
     const dataToInsert = { ...values };
 
     // Handle file uploads
@@ -143,41 +130,37 @@ export default function ProjectPage() {
       if (values[key][0]?.originFileObj) {
         const file = values[key][0].originFileObj;
         const attribute = attributes.find((attr) => attr.name === key);
-        const bucketName = attribute?.bucketName || "default-bucket";
-        const validFileName = file.name.replace(
-          /[^a-zA-Z0-9-._*'()&$@=;:+,?/ ]/g,
-          ""
+
+        const { error, data } = await uploadFile(
+          supabaseUrl,
+          supabaseServiceRoleKey,
+          attribute?.bucketName,
+          file
         );
-        const filePath = `public/${uuidv4()}/${validFileName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from(bucketName)
-          .upload(filePath, file);
-
-        if (uploadError) {
-          console.error("Error uploading file:", uploadError);
-          message.error(`Error uploading file: ${uploadError.message}`);
+        if (error) {
+          console.error("Error uploading file:", error);
+          message.error(`Error uploading file: ${error}`);
           setIsSubmitting(false);
           return;
         }
 
-        // Get public URL for the uploaded file
-        const { data } = supabase.storage
-          .from(bucketName)
-          .getPublicUrl(filePath);
-
+        // Only set the public URL as the value for the key
         dataToInsert[key] = data.publicUrl;
       }
     }
 
     // Insert the data into the table
-    const { error } = await supabase
-      .from(selectedTable.name)
-      .insert(dataToInsert);
+    const { error } = await createRecord(
+      supabaseUrl,
+      supabaseServiceRoleKey,
+      selectedTable.name,
+      dataToInsert
+    );
 
     if (error) {
       console.error("Error creating record:", error);
-      message.error(`Error creating record: ${error.message}`);
+      message.error(`Error creating record: ${error}`);
     } else {
       resetForm();
       setIsModalVisible(false);
