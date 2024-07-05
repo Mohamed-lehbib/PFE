@@ -6,9 +6,12 @@ export interface AttributeWithEnum {
   name: string;
   type: string;
   enumValues?: string[]; // Optional property for enum values
+  isOneToOne?: boolean;
+  tableReferenced?: string;
+  attributesReferenced?: string[];
 }
 
-// Structure for relationships
+// Structure for relationships (no longer needed in final structure)
 export interface Relationship {
   foreignKeyName: string;
   columns: string[];
@@ -21,7 +24,6 @@ export interface Relationship {
 export interface TableAttributes {
   tableName: string;
   attributes: AttributeWithEnum[];
-  relationships: Relationship[]; // New property for relationships
 }
 
 /**
@@ -52,7 +54,7 @@ export const parseSupabaseTablesWithAttributes = (tsFileContent: string): TableA
       const rowProp = memberType.getPropertyOrThrow("Row");
       const rowTypeNode = rowProp.getTypeNodeOrThrow() as TypeLiteralNode;
 
-      const attributes = rowTypeNode
+      let attributes = rowTypeNode
         .getMembers()
         .filter((field) => field instanceof PropertySignature)
         .map((field) => {
@@ -82,7 +84,6 @@ export const parseSupabaseTablesWithAttributes = (tsFileContent: string): TableA
 
       // Parse relationships
       const relationshipsProp = memberType.getPropertyOrThrow("Relationships");
-      let relationships: Relationship[] = [];
       const relationshipsArray = relationshipsProp.getTypeNodeOrThrow().forEachChildAsArray();
       relationshipsArray.forEach((relationshipNode) => {
         const relationshipType = typeChecker.getTypeAtLocation(relationshipNode);
@@ -106,17 +107,18 @@ export const parseSupabaseTablesWithAttributes = (tsFileContent: string): TableA
         const referencedColumns = referencedColumnsText ? referencedColumnsText.replace(/^\[(.*)\]$/, "$1").split(", ") : [];
 
         if (foreignKeyName && columns.length && referencedRelation && referencedColumns.length) {
-          relationships.push({
-            foreignKeyName,
-            columns,
-            isOneToOne,
-            tableReferenced: referencedRelation,
-            attributesReferenced: referencedColumns,
+          columns.forEach((column) => {
+            const attribute = attributes.find(attr => attr.name === column);
+            if (attribute) {
+              attribute.isOneToOne = isOneToOne;
+              attribute.tableReferenced = referencedRelation;
+              attribute.attributesReferenced = referencedColumns;
+            }
           });
         }
       });
 
-      return { tableName, attributes, relationships };
+      return { tableName, attributes };
     });
 
   return tablesWithAttributes;
