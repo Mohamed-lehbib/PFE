@@ -1,6 +1,15 @@
 import { getTablesByProjectId } from "@/queries/tables/get-tables-by-project-id/get-tables-by-project-id";
 import { createClient } from "@/utils/supabase/client";
-import { Button, Spin, Table, message, Progress, Checkbox, Select, Input } from "antd";
+import {
+  Button,
+  Spin,
+  Table,
+  message,
+  Progress,
+  Checkbox,
+  Select,
+  Input,
+} from "antd";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -20,7 +29,11 @@ interface AttributeData {
   create: boolean;
   update: boolean;
   enumValues?: string[];
-  bucketName?: string; // Add bucketName property
+  bucketName?: string;
+  isOneToOne?: boolean;
+  tableReferenced?: string;
+  attributesReferenced?: string[];
+  attributesToShow?: string; // New key for attributes to show
 }
 
 function mapAttributes(attributes: any[]): AttributeData[] {
@@ -153,7 +166,10 @@ export default function SelectAttributes() {
     });
   };
 
-  const handleBucketNameChange = (attributeName: string, bucketName: string) => {
+  const handleBucketNameChange = (
+    attributeName: string,
+    bucketName: string
+  ) => {
     const updatedAttributes = currentTable.attributes.map((attr) =>
       attr.name === attributeName ? { ...attr, bucketName } : attr
     );
@@ -164,7 +180,24 @@ export default function SelectAttributes() {
     });
   };
 
+  const handleReferencedAttributesChange = (
+    attributeName: string,
+    selectedAttribute: string
+  ) => {
+    const updatedAttributes = currentTable.attributes.map((attr) =>
+      attr.name === attributeName
+        ? { ...attr, attributesToShow: selectedAttribute }
+        : attr
+    );
+    setTables((prevTables) => {
+      const newTables = [...prevTables];
+      newTables[currentTableIndex].attributes = updatedAttributes;
+      return newTables;
+    });
+  };
+
   const currentTable = tables[currentTableIndex];
+
   const columns = [
     {
       title: "Attribute Name",
@@ -206,6 +239,34 @@ export default function SelectAttributes() {
               handleBucketNameChange(record.name, e.target.value)
             }
             placeholder="Enter bucket name"
+          />
+        ) : null,
+    },
+    {
+      title: "Referenced Table",
+      dataIndex: "tableReferenced",
+      key: "tableReferenced",
+    },
+    {
+      title: "Referenced Attribute",
+      dataIndex: "attributesToShow",
+      key: "attributesToShow",
+      render: (attributesToShow: string, record: AttributeData) =>
+        record.tableReferenced ? (
+          <Select
+            value={attributesToShow || record.attributesReferenced?.[0]}
+            style={{ minWidth: "100px" }}
+            options={
+              tables
+                .find((table) => table.name === record.tableReferenced)
+                ?.attributes.map((attr) => ({
+                  label: attr.name,
+                  value: attr.name,
+                })) || []
+            }
+            onChange={(value) =>
+              handleReferencedAttributesChange(record.name, value)
+            }
           />
         ) : null,
     },
