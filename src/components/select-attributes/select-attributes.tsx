@@ -313,8 +313,8 @@ export default function SelectAttributes() {
 
   return (
     <Spin spinning={loading}>
-      <div className="flex flex-col w-screen">
-        <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="flex flex-col w-full">
+        <div className="container mx-auto px-4 py-8 w-full">
           <h1 className="text-2xl font-semibold text-center mb-8">
             Attribute Selection for Table: {currentTable?.name}
           </h1>
@@ -325,6 +325,7 @@ export default function SelectAttributes() {
               rowKey="name"
               pagination={false}
               scroll={{ x: "max-content" }}
+              className="w-full"
             />
           )}
           <div className="flex justify-end mt-4">
