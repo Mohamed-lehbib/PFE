@@ -47,15 +47,17 @@ const EditRecordModal: React.FC<EditRecordModalProps> = ({
 
       const initialValues = { ...data };
       attributes.forEach((attr) => {
-        if (attr.metaType === "image" && data[attr.name]) {
-          initialValues[attr.name] = [
-            {
-              uid: "-1",
-              name: "image.png",
-              status: "done",
-              url: data[attr.name],
-            },
-          ];
+        if (attr.metaType === "image") {
+          initialValues[attr.name] = data[attr.name]
+            ? [
+                {
+                  uid: "-1",
+                  name: "image.png",
+                  status: "done",
+                  url: data[attr.name],
+                },
+              ]
+            : []; // Initialize with an empty array if no image value is present
         }
       });
       form.setFieldsValue(initialValues);
