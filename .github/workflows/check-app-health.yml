@@ -9,6 +9,9 @@ jobs:
   check-server-status:
     runs-on: ubuntu-latest
 
+    outputs:
+      status: ${{ steps.set_status.outputs.status }}
+
     steps:
       - name: Send request to the application
         id: check_status
@@ -53,13 +56,50 @@ jobs:
           echo "Current status: ${{ needs.check-server-status.outputs.status }}"
           echo "Previous status: ${{ env.previous_status }}"
 
-      - name: Send Slack notification
-        if: ${{ needs.check-server-status.outputs.status == 'down' || (needs.check-server-status.outputs.status == 'up' && env.previous_status == 'down') }}
-        run: |
-          if [ "${{ needs.check-server-status.outputs.status }}" == "down" ]; then
-            message=":red_circle: The server is down!"
-          elif [ "${{ needs.check-server-status.outputs.status }}" == "up" ] && [ "${{ env.previous_status }}" == "down" ]; then
-            message=":green_circle: The server is back up!"
-          fi
-          echo "Sending message to Slack: $message"
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
+      - name: Send Slack notification if server is down
+        if: ${{ needs.check-server-status.outputs.status == 'down' }}
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": ":red_circle: The server is down!",
+              "attachments": [
+                {
+                  "pretext": "Server Status",
+                  "color": "danger",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "short": true,
+                      "value": "Down"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
+
+      - name: Send Slack notification if server is back up
+        if: ${{ needs.check-server-status.outputs.status == 'up' && env.previous_status == 'down' }}
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": ":green_circle: The server is back up!",
+              "attachments": [
+                {
+                  "pretext": "Server Status",
+                  "color": "good",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "short": true,
+                      "value": "Up"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
