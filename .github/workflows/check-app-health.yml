@@ -21,19 +21,19 @@ jobs:
           echo "HTTP response code: $response"
           if [ "$response" -eq 200 ]; then
             echo "Server is up and running"
-            echo "up" > status.txt
+            echo "up" > current_status.txt
           else
             echo "Server is down"
-            echo "down" > status.txt
+            echo "down" > current_status.txt
           fi
       - name: Set status output
         id: set_status
-        run: echo "::set-output name=status::$(cat status.txt)"
-      - name: Upload status file as artifact
+        run: echo "::set-output name=status::$(cat current_status.txt)"
+      - name: Upload current status file as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: server-status
-          path: status.txt
+          name: current-server-status
+          path: current_status.txt
 
   notify:
     needs: check-server-status
@@ -41,33 +41,40 @@ jobs:
     if: always()
 
     steps:
-      - name: Download status file
+      - name: Download current status file
         uses: actions/download-artifact@v2
         with:
-          name: server-status
+          name: current-server-status
 
-      - name: Read status file
+      - name: Check if previous status file exists
+        id: check_previous_status
         run: |
-          if [ -f status.txt ]; then
-            previous_status=$(cat status.txt)
+          if [ -f previous_status.txt ]; then
+            echo "Previous status file exists."
           else
-            previous_status="unknown"
+            echo "Previous status file does not exist, creating one."
+            echo "unknown" > previous_status.txt
           fi
+
+      - name: Read previous status
+        run: |
+          previous_status=$(cat previous_status.txt)
           echo "Previous status: $previous_status"
           echo "previous_status=$previous_status" >> $GITHUB_ENV
 
-      - name: Update status file for next run
-        run: echo "${{ needs.check-server-status.outputs.status }}" > status.txt
-        # Upload the updated status for the next run
-      - name: Upload updated status file as artifact
+      - name: Update previous status file for next run
+        run: cp current_status.txt previous_status.txt
+
+      - name: Upload previous status file as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: server-status
-          path: status.txt
+          name: previous-server-status
+          path: previous_status.txt
 
       - name: Debug environment variables
         run: |
-          echo "Current status: ${{ needs.check-server-status.outputs.status }}"
+          current_status=$(cat current_status.txt)
+          echo "Current status: $current_status"
           echo "Previous status: ${{ env.previous_status }}"
 
       - name: Send Slack notification if server is down
