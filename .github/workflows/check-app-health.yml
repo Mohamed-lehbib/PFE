@@ -2,7 +2,7 @@ name: Check Server Status
 
 on:
   schedule:
-    - cron: "0 * * * *" # This cron schedule runs the job every hour
+    - cron: "*/1 * * * *" # This cron schedule runs the job every minute
 
 jobs:
   check-server-status:
