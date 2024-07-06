@@ -2,7 +2,7 @@ name: Check Server Status
 
 on:
   schedule:
-    - cron: "0 * * * *" # This cron schedule runs the job every hour
+    - cron: "0 */3 * * *" # This cron schedule runs the job every 3 hours
   workflow_dispatch:
 
 jobs:
@@ -13,6 +13,7 @@ jobs:
       status: ${{ steps.set_status.outputs.status }}
 
     steps:
+      - uses: actions/checkout@v2
       - name: Send request to the application
         id: check_status
         run: |
@@ -30,6 +31,11 @@ jobs:
       - name: Set status output
         id: set_status
         run: echo "::set-output name=status::$(cat status.txt)"
+      - name: Upload status file as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: server-status
+          path: status.txt
 
   notify:
     needs: check-server-status
@@ -37,11 +43,15 @@ jobs:
     if: always()
 
     steps:
-      - name: Check previous status
-        id: check_previous_status
+      - name: Download status file
+        uses: actions/download-artifact@v2
+        with:
+          name: server-status
+
+      - name: Read status file
         run: |
-          if [ -f previous_status.txt ]; then
-            previous_status=$(cat previous_status.txt)
+          if [ -f status.txt ]; then
+            previous_status=$(cat status.txt)
           else
             previous_status="unknown"
           fi
@@ -49,7 +59,7 @@ jobs:
           echo "previous_status=$previous_status" >> $GITHUB_ENV
 
       - name: Update status file
-        run: echo "${{ needs.check-server-status.outputs.status }}" > previous_status.txt
+        run: echo "${{ needs.check-server-status.outputs.status }}" > status.txt
 
       - name: Debug environment variables
         run: |
