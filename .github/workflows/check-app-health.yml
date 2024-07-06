@@ -23,7 +23,7 @@ jobs:
             echo "Server is down"
             echo "status=down" >> $GITHUB_ENV
             echo "down" > status.txt
-            exit 1
+          fi
       - name: Set status output
         id: set_status
         run: echo "::set-output name=status::$(cat status.txt)"
