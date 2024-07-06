@@ -2,7 +2,7 @@ name: Check Server Status
 
 on:
   schedule:
-    - cron: "0 * * * *" # This cron schedule runs the job every hour
+    - cron: "0 */3 * * *" # This cron schedule runs the job every hour
   workflow_dispatch:
 
 jobs:
@@ -29,7 +29,9 @@ jobs:
           fi
       - name: Set status output
         id: set_status
-        run: echo "::set-output name=status::$(cat status.txt)"
+        run: |
+          echo "status=$(cat status.txt)" >> $GITHUB_ENV
+          echo "status=$(cat status.txt)" >> $GITHUB_OUTPUT
 
   notify:
     needs: check-server-status
