@@ -21,11 +21,9 @@ jobs:
           echo "HTTP response code: $response"
           if [ "$response" -eq 200 ]; then
             echo "Server is up and running"
-            echo "status=up" >> $GITHUB_ENV
             echo "up" > status.txt
           else
             echo "Server is down"
-            echo "status=down" >> $GITHUB_ENV
             echo "down" > status.txt
           fi
       - name: Set status output
@@ -58,8 +56,14 @@ jobs:
           echo "Previous status: $previous_status"
           echo "previous_status=$previous_status" >> $GITHUB_ENV
 
-      - name: Update status file
+      - name: Update status file for next run
         run: echo "${{ needs.check-server-status.outputs.status }}" > status.txt
+        # Upload the updated status for the next run
+      - name: Upload updated status file as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: server-status
+          path: status.txt
 
       - name: Debug environment variables
         run: |
