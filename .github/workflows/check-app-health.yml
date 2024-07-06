@@ -2,15 +2,12 @@ name: Check Server Status
 
 on:
   schedule:
-    - cron: "0 * * * *" # This cron schedule runs the job every minute for testing purposes
+    - cron: "*/1 * * * *" # This cron schedule runs the job every minute for testing purposes
   workflow_dispatch:
 
 jobs:
   check-server-status:
     runs-on: ubuntu-latest
-
-    outputs:
-      status: ${{ steps.set_status.outputs.status }}
 
     steps:
       - name: Send request to the application
@@ -21,13 +18,14 @@ jobs:
           if [ "$response" -eq 200 ]; then
             echo "Server is up and running"
             echo "status=up" >> $GITHUB_ENV
-            echo "::set-output name=status::up"
           else
             echo "Server is down"
             echo "status=down" >> $GITHUB_ENV
-            echo "::set-output name=status::down"
             exit 1
           fi
+      - name: Set status output
+        run: echo "::set-output name=status::${{ env.status }}"
+        id: set_status
 
   notify:
     needs: check-server-status
