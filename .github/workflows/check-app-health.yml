@@ -2,7 +2,7 @@ name: Check Server Status
 
 on:
   schedule:
-    - cron: "0 */3 * * *" # This cron schedule runs the job every hour
+    - cron: "0 */3 * * *" # This cron schedule runs the job every 3 hours
   workflow_dispatch:
 
 jobs:
@@ -27,6 +27,7 @@ jobs:
             echo "status=down" >> $GITHUB_ENV
             echo "down" > status.txt
           fi
+
       - name: Set status output
         id: set_status
         run: |
@@ -50,20 +51,20 @@ jobs:
           echo "Previous status: $previous_status"
           echo "previous_status=$previous_status" >> $GITHUB_ENV
 
-      - name: Update status file
-        run: echo "${{ needs.check-server-status.outputs.status }}" > previous_status.txt
-
       - name: Debug environment variables
         run: |
           echo "Current status: ${{ needs.check-server-status.outputs.status }}"
           echo "Previous status: ${{ env.previous_status }}"
+
+      - name: Update status file
+        run: echo "${{ needs.check-server-status.outputs.status }}" > previous_status.txt
 
       - name: Send Slack notification if server is down
         if: ${{ needs.check-server-status.outputs.status == 'down' }}
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: danger
-          SLACK_MESSAGE: ":red_circle: The server is currently down. Immediate attention is required.\n[View Dashboard](https://pfe-two.vercel.app)"
+          SLACK_MESSAGE: ":red_circle: The server is currently down. Immediate attention is required.\n**Site**: https://pfe-two.vercel.app"
           SLACK_TITLE: "Server Status Alert - Down"
           MSG_MINIMAL: true
           SLACK_WEBHOOK: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
@@ -73,7 +74,7 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: good
-          SLACK_MESSAGE: ":white_check_mark: The server is back up and running smoothly.\n[View Dashboard](https://pfe-two.vercel.app)"
+          SLACK_MESSAGE: ":white_check_mark: The server is back up and running smoothly.\n**Site**: https://pfe-two.vercel.app"
           SLACK_TITLE: "Server Status Alert - Up"
           MSG_MINIMAL: true
           SLACK_WEBHOOK: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
