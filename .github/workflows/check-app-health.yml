@@ -34,6 +34,12 @@ jobs:
           echo "status=$(cat status.txt)" >> $GITHUB_ENV
           echo "status=$(cat status.txt)" >> $GITHUB_OUTPUT
 
+      - name: Ensure previous status file exists
+        run: |
+          if [ ! -f previous_status.txt ]; then
+            echo "unknown" > previous_status.txt
+          fi
+
   notify:
     needs: check-server-status
     runs-on: ubuntu-latest
@@ -43,11 +49,7 @@ jobs:
       - name: Check previous status
         id: check_previous_status
         run: |
-          if [ -f previous_status.txt ]; then
-            previous_status=$(cat previous_status.txt)
-          else
-            previous_status="unknown"
-          fi
+          previous_status=$(cat previous_status.txt)
           echo "Previous status: $previous_status"
           echo "previous_status=$previous_status" >> $GITHUB_ENV
 
@@ -64,7 +66,7 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: danger
-          SLACK_MESSAGE: ":red_circle: The server is currently down. Immediate attention is required.\n**Site**: https://pfe-two.vercel.app"
+          SLACK_MESSAGE: ":red_circle: The server is currently down. Immediate attention is required.\n*Site*: <https://pfe-two.vercel.app|Visit Site>"
           SLACK_TITLE: "Server Status Alert - Down"
           MSG_MINIMAL: true
           SLACK_WEBHOOK: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
@@ -74,7 +76,7 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: good
-          SLACK_MESSAGE: ":white_check_mark: The server is back up and running smoothly.\n**Site**: https://pfe-two.vercel.app"
+          SLACK_MESSAGE: ":white_check_mark: The server is back up and running smoothly.\n*Site*: <https://pfe-two.vercel.app|Visit Site>"
           SLACK_TITLE: "Server Status Alert - Up"
           MSG_MINIMAL: true
           SLACK_WEBHOOK: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
