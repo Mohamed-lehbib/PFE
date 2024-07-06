@@ -1,0 +1,51 @@
+name: Check Server Status
+
+on:
+  schedule:
+    - cron: "0 * * * *" # This cron schedule runs the job every hour
+
+jobs:
+  check-server-status:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send request to the application
+        id: check_status
+        run: |
+          response=$(curl --write-out '%{http_code}' --silent --output /dev/null ${{ secrets.APP_URL }})
+          if [ "$response" -eq 200 ]; then
+            echo "Server is up and running"
+            echo "status=up" >> $GITHUB_ENV
+          else
+            echo "Server is down"
+            echo "status=down" >> $GITHUB_ENV
+            exit 1
+          fi
+
+  notify:
+    needs: check-server-status
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Check previous status
+        id: check_previous_status
+        run: |
+          previous_status=$(cat previous_status.txt || echo "unknown")
+          current_status="${{ env.status }}"
+          echo "Previous status: $previous_status"
+          echo "Current status: $current_status"
+          echo "previous_status=$previous_status" >> $GITHUB_ENV
+
+      - name: Update status file
+        run: echo "${{ env.status }}" > previous_status.txt
+
+      - name: Send Slack notification
+        if: ${{ env.status == 'down' || (env.status == 'up' && env.previous_status == 'down') }}
+        run: |
+          if [ "${{ env.status }}" == "down" ]; then
+            message=":red_circle: The server is down!"
+          elif [ "${{ env.status }}" == "up" ] && [ "${{ env.previous_status }}" == "down" ]; then
+            message=":green_circle: The server is back up!"
+          fi
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
