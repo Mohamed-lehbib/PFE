@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Download previous status file or create a new one
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: previous-status
           path: .
@@ -47,7 +47,7 @@ jobs:
           echo "status=$(cat status.txt)" >> $GITHUB_OUTPUT
 
       - name: Upload new status as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: previous-status
           path: previous_status.txt
@@ -60,7 +60,7 @@ jobs:
 
     steps:
       - name: Download previous status file or create a new one
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: previous-status
           path: .
@@ -84,7 +84,7 @@ jobs:
         run: echo "${{ needs.check-server-status.outputs.status }}" > previous_status.txt
 
       - name: Upload updated status file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: previous-status
           path: previous_status.txt
