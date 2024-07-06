@@ -12,11 +12,12 @@ jobs:
       status: ${{ steps.set_status.outputs.status }}
 
     steps:
-      - name: Download previous status file
+      - name: Download previous status file or create a new one
         uses: actions/download-artifact@v2
         with:
           name: previous-status
           path: .
+        continue-on-error: true
 
       - name: Ensure previous status file exists
         run: |
@@ -57,14 +58,18 @@ jobs:
     if: always()
 
     steps:
-      - name: Download previous status file
+      - name: Download previous status file or create a new one
         uses: actions/download-artifact@v2
         with:
           name: previous-status
           path: .
+        continue-on-error: true
 
       - name: Check previous status
         run: |
+          if [ ! -f previous_status.txt ]; then
+            echo "unknown" > previous_status.txt
+          fi
           previous_status=$(cat previous_status.txt)
           echo "Previous status: $previous_status"
           echo "previous_status=$previous_status" >> $GITHUB_ENV
