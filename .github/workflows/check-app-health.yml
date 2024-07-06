@@ -2,7 +2,7 @@ name: Check Server Status
 
 on:
   schedule:
-    - cron: "0 */3 * * *" # This cron schedule runs the job every 3 hours
+    - cron: "0 */3 * * *"
   workflow_dispatch:
 
 jobs:
@@ -49,9 +49,9 @@ jobs:
       - name: Upload new status as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: previous-status
+          name: previous-status-${{ github.run_id }}
           path: previous_status.txt
-        if: always() # Ensure upload even if previous steps fail
+        if: always()
 
   notify:
     needs: check-server-status
@@ -62,7 +62,7 @@ jobs:
       - name: Download previous status file or create a new one
         uses: actions/download-artifact@v4
         with:
-          name: previous-status
+          name: previous-status-${{ github.run_id }}
           path: .
         continue-on-error: true
 
@@ -75,20 +75,15 @@ jobs:
           echo "Previous status: $previous_status"
           echo "previous_status=$previous_status" >> $GITHUB_ENV
 
-      - name: Debug environment variables
-        run: |
-          echo "Current status: ${{ needs.check-server-status.outputs.status }}"
-          echo "Previous status: ${{ env.previous_status }}"
-
       - name: Update status file
         run: echo "${{ needs.check-server-status.outputs.status }}" > previous_status.txt
 
       - name: Upload updated status file
         uses: actions/upload-artifact@v4
         with:
-          name: previous-status
+          name: previous-status-${{ github.run_id }}
           path: previous_status.txt
-        if: always() # Ensure upload even if previous steps fail
+        if: always()
 
       - name: Send Slack notification if server is down
         if: ${{ needs.check-server-status.outputs.status == 'down' }}
