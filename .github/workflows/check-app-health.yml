@@ -61,7 +61,7 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: danger
-          SLACK_MESSAGE: "The server is currently down. Immediate attention is required. [View Dashboard](https://pfe-two.vercel.app)"
+          SLACK_MESSAGE: ":red_circle: The server is currently down. Immediate attention is required.\n[View Dashboard](https://pfe-two.vercel.app)"
           SLACK_TITLE: "Server Status Alert - Down"
           MSG_MINIMAL: true
           SLACK_WEBHOOK: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
@@ -71,7 +71,7 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: good
-          SLACK_MESSAGE: "The server is back up and running smoothly. [View Dashboard](https://pfe-two.vercel.app)"
+          SLACK_MESSAGE: ":white_check_mark: The server is back up and running smoothly.\n[View Dashboard](https://pfe-two.vercel.app)"
           SLACK_TITLE: "Server Status Alert - Up"
           MSG_MINIMAL: true
           SLACK_WEBHOOK: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
