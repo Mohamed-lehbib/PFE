@@ -2,27 +2,32 @@ name: Check Server Status
 
 on:
   schedule:
-    - cron: '*/1 * * * *' # This cron schedule runs the job every minute for testing purposes
+    - cron: "0 * * * *" # This cron schedule runs the job every minute for testing purposes
   workflow_dispatch:
 
 jobs:
   check-server-status:
     runs-on: ubuntu-latest
 
+    outputs:
+      status: ${{ steps.set_status.outputs.status }}
+
     steps:
-    - name: Send request to the application
-      id: check_status
-      run: |
-        response=$(curl --write-out '%{http_code}' --silent --output /dev/null ${{ secrets.APP_URL }})
-        echo "HTTP response code: $response"
-        if [ "$response" -eq 200 ]; then
-          echo "Server is up and running"
-          echo "status=up" >> $GITHUB_ENV
-        else
-          echo "Server is down"
-          echo "status=down" >> $GITHUB_ENV
-          exit 1
-        fi
+      - name: Send request to the application
+        id: check_status
+        run: |
+          response=$(curl --write-out '%{http_code}' --silent --output /dev/null ${{ secrets.APP_URL }})
+          echo "HTTP response code: $response"
+          if [ "$response" -eq 200 ]; then
+            echo "Server is up and running"
+            echo "status=up" >> $GITHUB_ENV
+            echo "::set-output name=status::up"
+          else
+            echo "Server is down"
+            echo "status=down" >> $GITHUB_ENV
+            echo "::set-output name=status::down"
+            exit 1
+          fi
 
   notify:
     needs: check-server-status
@@ -30,32 +35,32 @@ jobs:
     if: always()
 
     steps:
-    - name: Check previous status
-      id: check_previous_status
-      run: |
-        if [ -f previous_status.txt ]; then
-          previous_status=$(cat previous_status.txt)
-        else
-          previous_status="unknown"
-        fi
-        echo "Previous status: $previous_status"
-        echo "previous_status=$previous_status" >> $GITHUB_ENV
+      - name: Check previous status
+        id: check_previous_status
+        run: |
+          if [ -f previous_status.txt ]; then
+            previous_status=$(cat previous_status.txt)
+          else
+            previous_status="unknown"
+          fi
+          echo "Previous status: $previous_status"
+          echo "previous_status=$previous_status" >> $GITHUB_ENV
 
-    - name: Update status file
-      run: echo "${{ env.status }}" > previous_status.txt
+      - name: Update status file
+        run: echo "${{ needs.check-server-status.outputs.status }}" > previous_status.txt
 
-    - name: Debug environment variables
-      run: |
-        echo "Current status: ${{ env.status }}"
-        echo "Previous status: ${{ env.previous_status }}"
+      - name: Debug environment variables
+        run: |
+          echo "Current status: ${{ needs.check-server-status.outputs.status }}"
+          echo "Previous status: ${{ env.previous_status }}"
 
-    - name: Send Slack notification
-      if: ${{ env.status == 'down' || (env.status == 'up' && env.previous_status == 'down') }}
-      run: |
-        if [ "${{ env.status }}" == "down" ]; then
-          message=":red_circle: The server is down!"
-        elif [ "${{ env.status }}" == "up" ] && [ "${{ env.previous_status }}" == "down" ]; then
-          message=":green_circle: The server is back up!"
-        fi
-        echo "Sending message to Slack: $message"
-        curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
+      - name: Send Slack notification
+        if: ${{ needs.check-server-status.outputs.status == 'down' || (needs.check-server-status.outputs.status == 'up' && env.previous_status == 'down') }}
+        run: |
+          if [ "${{ needs.check-server-status.outputs.status }}" == "down" ]; then
+            message=":red_circle: The server is down!"
+          elif [ "${{ needs.check-server-status.outputs.status }}" == "up" ] && [ "${{ env.previous_status }}" == "down" ]; then
+            message=":green_circle: The server is back up!"
+          fi
+          echo "Sending message to Slack: $message"
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
