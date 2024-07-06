@@ -58,74 +58,20 @@ jobs:
 
       - name: Send Slack notification if server is down
         if: ${{ needs.check-server-status.outputs.status == 'down' }}
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload: |
-            {
-              "text": ":red_circle: *Server Status Alert*",
-              "attachments": [
-                {
-                  "pretext": "The server is currently down. Immediate attention is required.",
-                  "color": "danger",
-                  "fields": [
-                    {
-                      "title": "Status",
-                      "short": true,
-                      "value": "Down"
-                    },
-                    {
-                      "title": "Time",
-                      "short": true,
-                      "value": "$(date)"
-                    }
-                  ],
-                  "actions": [
-                    {
-                      "type": "button",
-                      "text": "View Dashboard",
-                      "url": "https://pfe-two.vercel.app",
-                      "style": "danger"
-                    }
-                  ]
-                }
-              ]
-            }
+        uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
+          SLACK_COLOR: danger
+          SLACK_MESSAGE: "The server is currently down. Immediate attention is required. [View Dashboard](https://pfe-two.vercel.app)"
+          SLACK_TITLE: "Server Status Alert - Down"
+          MSG_MINIMAL: true
+          SLACK_WEBHOOK: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
 
       - name: Send Slack notification if server is back up
         if: ${{ needs.check-server-status.outputs.status == 'up' && env.previous_status == 'down' }}
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          payload: |
-            {
-              "text": ":green_circle: *Server Status Alert*",
-              "attachments": [
-                {
-                  "pretext": "The server is back up and running smoothly.",
-                  "color": "good",
-                  "fields": [
-                    {
-                      "title": "Status",
-                      "short": true,
-                      "value": "Up"
-                    },
-                    {
-                      "title": "Time",
-                      "short": true,
-                      "value": "$(date)"
-                    }
-                  ],
-                  "actions": [
-                    {
-                      "type": "button",
-                      "text": "View Dashboard",
-                      "url": "https://pfe-two.vercel.app",
-                      "style": "primary"
-                    }
-                  ]
-                }
-              ]
-            }
+        uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
+          SLACK_COLOR: good
+          SLACK_MESSAGE: "The server is back up and running smoothly. [View Dashboard](https://pfe-two.vercel.app)"
+          SLACK_TITLE: "Server Status Alert - Up"
+          MSG_MINIMAL: true
+          SLACK_WEBHOOK: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
