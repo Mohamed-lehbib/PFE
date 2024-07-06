@@ -2,7 +2,7 @@ name: Check Server Status
 
 on:
   schedule:
-    - cron: '* * * * *' # This cron schedule runs the job every minute for testing purposes
+    - cron: '*/1 * * * *' # This cron schedule runs the job every minute for testing purposes
   workflow_dispatch:
 
 jobs:
@@ -33,10 +33,12 @@ jobs:
     - name: Check previous status
       id: check_previous_status
       run: |
-        previous_status=$(cat previous_status.txt || echo "unknown")
-        current_status="${{ env.status }}"
+        if [ -f previous_status.txt ]; then
+          previous_status=$(cat previous_status.txt)
+        else
+          previous_status="unknown"
+        fi
         echo "Previous status: $previous_status"
-        echo "Current status: $current_status"
         echo "previous_status=$previous_status" >> $GITHUB_ENV
 
     - name: Update status file
