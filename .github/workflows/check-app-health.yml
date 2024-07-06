@@ -2,7 +2,7 @@ name: Check Server Status
 
 on:
   schedule:
-    - cron: "*/1 * * * *" # This cron schedule runs the job every minute for testing purposes
+    - cron: "0 * * * *" # This cron schedule runs the job every hour
   workflow_dispatch:
 
 jobs:
@@ -62,16 +62,29 @@ jobs:
         with:
           payload: |
             {
-              "text": ":red_circle: The server is down!",
+              "text": ":red_circle: *Server Status Alert*",
               "attachments": [
                 {
-                  "pretext": "Server Status",
+                  "pretext": "The server is currently down. Immediate attention is required.",
                   "color": "danger",
                   "fields": [
                     {
                       "title": "Status",
                       "short": true,
                       "value": "Down"
+                    },
+                    {
+                      "title": "Time",
+                      "short": true,
+                      "value": "$(date)"
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "type": "button",
+                      "text": "View Dashboard",
+                      "url": "https://pfe-two.vercel.app",
+                      "style": "danger"
                     }
                   ]
                 }
@@ -86,16 +99,29 @@ jobs:
         with:
           payload: |
             {
-              "text": ":green_circle: The server is back up!",
+              "text": ":green_circle: *Server Status Alert*",
               "attachments": [
                 {
-                  "pretext": "Server Status",
+                  "pretext": "The server is back up and running smoothly.",
                   "color": "good",
                   "fields": [
                     {
                       "title": "Status",
                       "short": true,
                       "value": "Up"
+                    },
+                    {
+                      "title": "Time",
+                      "short": true,
+                      "value": "$(date)"
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "type": "button",
+                      "text": "View Dashboard",
+                      "url": "https://pfe-two.vercel.app",
+                      "style": "primary"
                     }
                   ]
                 }
