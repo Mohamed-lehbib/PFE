@@ -51,6 +51,7 @@ jobs:
         with:
           name: previous-status
           path: previous_status.txt
+        if: always() # Ensure upload even if previous steps fail
 
   notify:
     needs: check-server-status
@@ -87,6 +88,7 @@ jobs:
         with:
           name: previous-status
           path: previous_status.txt
+        if: always() # Ensure upload even if previous steps fail
 
       - name: Send Slack notification if server is down
         if: ${{ needs.check-server-status.outputs.status == 'down' }}
