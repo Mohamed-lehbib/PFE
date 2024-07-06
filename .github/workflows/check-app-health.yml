@@ -2,7 +2,7 @@ name: Check Server Status
 
 on:
   schedule:
-    - cron: "0 */3 * * *"  # This cron schedule runs the job every 3 hours
+    - cron: "0 */3 * * *"
   workflow_dispatch:
 
 jobs:
@@ -17,19 +17,6 @@ jobs:
         id: set_artifact_name
         run: echo "::set-output name=artifact_name::previous-status-${{ github.run_number }}-${{ github.job }}"
 
-      - name: Download previous status file or create a new one
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ steps.set_artifact_name.outputs.artifact_name }}
-          path: .
-        continue-on-error: true
-
-      - name: Ensure previous status file exists
-        run: |
-          if [ ! -f previous_status.txt ]; then
-            echo "unknown" > previous_status.txt
-          fi
-
       - name: Send request to the application
         id: check_status
         run: |
@@ -40,22 +27,17 @@ jobs:
             echo "status=up" >> $GITHUB_ENV
             echo "up" > status.txt
           else
-            echo "Server is down"
+            echo "Server is down or inaccessible"
             echo "status=down" >> $GITHUB_ENV
             echo "down" > status.txt
-
-      - name: Set status output
-        id: set_status
-        run: |
-          echo "status=$(cat status.txt)" >> $GITHUB_ENV
           echo "status=$(cat status.txt)" >> $GITHUB_OUTPUT
 
       - name: Upload status as artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.set_artifact_name.outputs.artifact_name }}
-          path: previous_status.txt
-        if: always()  # Ensure upload even if previous steps fail
+          path: status.txt
+        if: always() # Ensure upload even if previous steps fail
 
   notify:
     needs: check-server-status
@@ -72,7 +54,7 @@ jobs:
       - name: Debug environment variables
         run: |
           echo "Current status: ${{ needs.check-server-status.outputs.status }}"
-          echo "Previous status file exists: $(if [ -f previous_status.txt ]; then echo 'yes'; else echo 'no'; fi)"
+          echo "Artifact name used: ${{ needs.check-server-status.outputs.artifact_name }}"
 
       - name: Send Slack notification if server is down
         if: ${{ needs.check-server-status.outputs.status == 'down' }}
@@ -84,7 +66,7 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_MONITORING_WEBHOOK_URL }}
 
       - name: Send Slack notification if server is back up
-        if: ${{ needs.check-server-status.outputs.status == 'up' && 'unknown' != 'down' }}
+        if: ${{ needs.check-server-status.outputs.status == 'up' }}
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_COLOR: good
