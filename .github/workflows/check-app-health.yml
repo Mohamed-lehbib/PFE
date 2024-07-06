@@ -18,14 +18,15 @@ jobs:
           if [ "$response" -eq 200 ]; then
             echo "Server is up and running"
             echo "status=up" >> $GITHUB_ENV
+            echo "up" > status.txt
           else
             echo "Server is down"
             echo "status=down" >> $GITHUB_ENV
+            echo "down" > status.txt
             exit 1
-          fi
       - name: Set status output
-        run: echo "::set-output name=status::${{ env.status }}"
         id: set_status
+        run: echo "::set-output name=status::$(cat status.txt)"
 
   notify:
     needs: check-server-status
