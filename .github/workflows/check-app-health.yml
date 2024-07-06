@@ -13,6 +13,12 @@ jobs:
       status: ${{ steps.set_status.outputs.status }}
 
     steps:
+      - name: Ensure previous status file exists
+        run: |
+          if [ ! -f previous_status.txt ]; then
+            echo "unknown" > previous_status.txt
+          fi
+
       - name: Send request to the application
         id: check_status
         run: |
@@ -33,12 +39,6 @@ jobs:
         run: |
           echo "status=$(cat status.txt)" >> $GITHUB_ENV
           echo "status=$(cat status.txt)" >> $GITHUB_OUTPUT
-
-      - name: Ensure previous status file exists
-        run: |
-          if [ ! -f previous_status.txt ]; then
-            echo "unknown" > previous_status.txt
-          fi
 
   notify:
     needs: check-server-status
